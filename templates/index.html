@@ -120,13 +120,13 @@
 
     <!-- Add this near the top of your file, below the breadcrumb -->
     <div class="search-box">
-        <form action="{{ url_for('search_files', filepath=current_dir[len(base_dir)+1:].replace('\\', '/')) }}" method="post">
+        <form action="{{ url_for('search_files') }}">
             <input type="text" name="search_term" placeholder="Search in files..."
                    value="{{ search_term if search_term }}" class="search-input">
             <input type="hidden" name="current_dir" value="{{ current_dir }}">
             <button type="submit" class="search-button">Search</button>
             {% if is_search_results %}
-            <a href="{{ url_for('browse', subpath=current_dir[len(base_dir)+1:].replace('\\', '/')) }}"
+            <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
                class="cancel-search">Show All</a>
             {% endif %}
         </form>
@@ -141,7 +141,7 @@
         </tr>
         </thead>
         <tbody>
-        <!-- Modify your file display section -->
+
         {% for item in items %}
         <tr>
             <td>

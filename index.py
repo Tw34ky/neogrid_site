@@ -49,6 +49,7 @@ def browse(subpath):
 
 
 def list_files(directory):
+    print(directory)
     # Get all files and directories
     items = []
     try:
@@ -113,12 +114,36 @@ def download(filename):
 def inject_os():
     return {'os': os}
 
-@app.route('search_files', methods=['POST'])
-def search_files(filepath):
+
+@app.route('/search_files')
+def search_files():
+    args = request.args
+    filepath = args.getlist('current_dir')[0]
+    filepath = filepath.replace('/', '\\')
+
+    # Safely join paths and ensure we stay within BASE_DIR
+    try:
+        full_path = os.path.abspath(os.path.join(BASE_DIR, filepath))
+    except:
+        abort(404)
+
+    # Security check - prevent directory traversal
+    if not full_path.startswith(BASE_DIR):
+        abort(403, description="Access denied")
+
+    if not os.path.exists(full_path):
+        abort(404)
+
     item_list = []
-    for i in os.listdir(filepath):
-        if i.endswith('.txt') or i.endswith('.docx') or i.endswith('.pdf'):
-            item_list.append(i)
+
+    # Рекурсивно обходим все директории и файлы
+    for root, dirs, files in os.walk(full_path):
+        for file in files:
+            if file.endswith('.txt') or file.endswith('.docx') or file.endswith('.pdf'):
+                item = f"{root}/{file}".replace('\\', '/')
+                item_list.append({"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1]})
+    print(item_list)
+    return render_template('files.html', files=item_list)
 
 
 
