@@ -5,7 +5,8 @@ from werkzeug.utils import redirect
 from flask import request
 import docx
 from PyPDF2 import PdfReader
-import io
+import pprint
+from globals import *
 
 
 app = Flask(__name__)
@@ -49,7 +50,6 @@ def browse(subpath):
 
 
 def list_files(directory):
-    print(directory)
     # Get all files and directories
     items = []
     try:
@@ -63,9 +63,7 @@ def list_files(directory):
                     'modified': os.path.getmtime(item_path)
                 })
             except (OSError, PermissionError):
-                continue  # Skip files we can't access
-
-        # Sort directories first, then files
+                continue
         items.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
     except (OSError, PermissionError):
         abort(403, description="Cannot access directory")
@@ -119,6 +117,7 @@ def inject_os():
 def search_files():
     args = request.args
     filepath = args.getlist('current_dir')[0]
+    search_prompt = args.getlist('search_term')[0]
     filepath = filepath.replace('/', '\\')
 
     # Safely join paths and ensure we stay within BASE_DIR
@@ -141,51 +140,56 @@ def search_files():
         for file in files:
             if file.endswith('.txt') or file.endswith('.docx') or file.endswith('.pdf'):
                 item = f"{root}/{file}".replace('\\', '/')
-                file_text = db_expansion(item, item.rsplit('.')[-1])
+                file_text = db_expansion(filename=item, search_prompt=search_prompt)
+                if not file_text:
+                    continue
                 item_list.append({"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
-    print(item_list)
+    pprint.pprint(item_list)
     return render_template('files.html', files=item_list)
 
 
-def db_expansion(filename, filetype):
-    if filetype == '.docx':
-        document = docx.Document(filename)
-        full_text = []
-        for paragraph in document.paragraphs:
-            full_text.append(paragraph.text)
-        return '\n'.join(full_text)
-
-    if filetype == '.pdf':
-        with open(filename, 'rb') as file:
-            reader = PdfReader(file)
-            text = "".join([reader.getPage(i).extractText() for i in range(reader.numPages)])
-            return text
-
-    if filetype == '.txt':
-        file = open(filename, 'r')
-        return file.readlines()
+def db_expansion(filename, search_prompt):
+    retrieved_chunks = search_in_file(filename, search_prompt)
+    """
+    ig some db code idk    
+    """
+    return retrieved_chunks
 
 
-def search_in_file(filepath, search_term):
+def search_in_file(filepath, search_prompt):
     """Search for text in different file types"""
     try:
+        output_data = []
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
-            return search_term.lower() in content.lower()
+                chunks = [content[i:i + CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
+                for chunk in chunks:
+                    if search_prompt in chunk:
+                        output_data.append({'chunk': chunk})
+            return output_data
 
         elif filepath.endswith('.docx'):
             doc = docx.Document(filepath)
-            text = '\n'.join([para.text for para in doc.paragraphs])
-            return search_term.lower() in text.lower()
+            content = ' '.join([para.text for para in doc.paragraphs])
+            chunks = [content[i:i + CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
+            for i in chunks:
+                if search_prompt in i:
+                    output_data.append({'chunk': i})
+            return output_data
 
         elif filepath.endswith('.pdf'):
             with open(filepath, 'rb') as f:
                 reader = PdfReader(f)
-                text = '\n'.join([page.extract_text() for page in reader.pages])
-            return search_term.lower() in text.lower()
+                content = ' '.join([page.extract_text() for page in reader.pages])
+                chunks = [content[i:i + CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
+                for i in chunks:
+                    if search_prompt in i:
+                        output_data.append({'chunk': i})
+                return output_data
 
         return False
+
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
         return False
