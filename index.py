@@ -141,10 +141,29 @@ def search_files():
         for file in files:
             if file.endswith('.txt') or file.endswith('.docx') or file.endswith('.pdf'):
                 item = f"{root}/{file}".replace('\\', '/')
-                item_list.append({"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1]})
+                file_text = db_expansion(item, item.rsplit('.')[-1])
+                item_list.append({"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
     print(item_list)
     return render_template('files.html', files=item_list)
 
+
+def db_expansion(filename, filetype):
+    if filetype == '.docx':
+        document = docx.Document(filename)
+        full_text = []
+        for paragraph in document.paragraphs:
+            full_text.append(paragraph.text)
+        return '\n'.join(full_text)
+
+    if filetype == '.pdf':
+        with open(filename, 'rb') as file:
+            reader = PdfReader(file)
+            text = "".join([reader.getPage(i).extractText() for i in range(reader.numPages)])
+            return text
+
+    if filetype == '.txt':
+        file = open(filename, 'r')
+        return file.readlines()
 
 
 def search_in_file(filepath, search_term):
