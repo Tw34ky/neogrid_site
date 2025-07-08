@@ -8,7 +8,6 @@ from PyPDF2 import PdfReader
 import pprint
 from globals import *
 
-
 app = Flask(__name__)
 
 # Register custom filters
@@ -70,7 +69,6 @@ def list_files(directory):
 
     # Calculate relative path for navigation
     rel_path = os.path.relpath(directory, BASE_DIR)
-    print(rel_path)
     # Get parent directory if not at root
     parent_dir = None
     if directory != BASE_DIR:
@@ -143,7 +141,8 @@ def search_files():
                 file_text = db_expansion(filename=item, search_prompt=search_prompt)
                 if not file_text:
                     continue
-                item_list.append({"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
+                item_list.append(
+                    {"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
     pprint.pprint(item_list)
     return render_template('files.html', files=item_list)
 
@@ -157,37 +156,44 @@ def db_expansion(filename, search_prompt):
 
 
 def search_in_file(filepath, search_prompt):
-    """Search for text in different file types"""
     try:
         output_data = []
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
-                chunks = [content[i:i + CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
-                for chunk in chunks:
-                    if search_prompt in chunk:
-                        output_data.append({'chunk': chunk})
+                point = content.lower().index(search_prompt.lower())
+                if point != -1:
+                    chunk = content[
+                            content.index(search_prompt) - CHUNK_SIZE // 2:content.index(search_prompt)] + \
+                            search_prompt + content[content.index(search_prompt):content.index(search_prompt) + \
+                                                                                 len(search_prompt) + CHUNK_SIZE // 2]
+                    output_data.append({'chunk': chunk})
             return output_data
 
         elif filepath.endswith('.docx'):
             doc = docx.Document(filepath)
             content = ' '.join([para.text for para in doc.paragraphs])
-            chunks = [content[i:i + CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
-            for i in chunks:
-                if search_prompt in i:
-                    output_data.append({'chunk': i})
+            point = content.lower().index(search_prompt.lower())
+            if point != -1:
+                chunk = content[
+                        content.index(search_prompt) - CHUNK_SIZE // 2:content.index(search_prompt)] + \
+                        search_prompt + content[content.index(search_prompt):content.index(search_prompt) + \
+                                                                             len(search_prompt) + CHUNK_SIZE // 2]
+                output_data.append({'chunk': chunk})
             return output_data
 
         elif filepath.endswith('.pdf'):
-            with open(filepath, 'rb') as f:
+            with (open(filepath, 'rb') as f):
                 reader = PdfReader(f)
                 content = ' '.join([page.extract_text() for page in reader.pages])
-                chunks = [content[i:i + CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
-                for i in chunks:
-                    if search_prompt in i:
-                        output_data.append({'chunk': i})
+                point = content.lower().index(search_prompt.lower())
+                if point != -1:
+                    chunk = content[
+                            content.index(search_prompt) - CHUNK_SIZE // 2:content.index(search_prompt)] + \
+                            search_prompt + content[content.index(search_prompt):content.index(search_prompt) + \
+                                                                                 len(search_prompt) + CHUNK_SIZE // 2]
+                    output_data.append({'chunk': chunk})
                 return output_data
-
         return False
 
     except Exception as e:
