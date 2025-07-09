@@ -121,15 +121,4 @@ button:before {
   height: 200%;
   background: linear-gradient(30deg,rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%); /* Замените на ваш URL */
   background-size: cover; /* Растягиваем изображение, чтобы покрыть всю область */
-  background-repeat: no-repeat; /* Не повторяем изображение */
-  animation: background-pan 20s linear infinite; /* Применяем анимацию */
-}
-
-@keyframes background-pan {
-  from {
-    background-position: 0% 0%;
-  }
-  to {
-    background-position: 0% 100%; /* Движение вниз по идее */
-  }
 }

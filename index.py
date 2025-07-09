@@ -4,6 +4,7 @@ from filters import register_filters
 from werkzeug.utils import redirect
 from flask import request
 import docx
+from pytesseract_func import pdf_to_text
 # from PyPDF2 import PdfReader
 import pprint
 from globals import *
@@ -188,14 +189,14 @@ def search_in_file(filepath, search_prompt):
             content = ""
             for page in doc:
                 content += page.get_text()
+            if len(content) == 0:
+                content = pdf_to_text(doc)
             point = content.lower().index(search_prompt.lower())
             if point != -1:
                 chunk = content[
-                        max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(search_prompt)] + content[
-                                                                                                               content.index(
-                                                                                                                   search_prompt):content.index(
-                                                                                                                   search_prompt) + len(
-                                                                                                                   search_prompt) + CHUNK_SIZE // 2]
+                        max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(search_prompt)] + \
+                        content[content.index(search_prompt):content.index(search_prompt) + len(search_prompt) + \
+                                                             CHUNK_SIZE // 2]
                 output_data.append({'chunk': chunk})
                 return output_data
         return False
