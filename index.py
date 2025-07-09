@@ -4,7 +4,7 @@ from filters import register_filters
 from werkzeug.utils import redirect
 from flask import request
 import docx
-from PyPDF2 import PdfReader
+# from PyPDF2 import PdfReader
 import pprint
 from globals import *
 
@@ -163,10 +163,9 @@ def search_in_file(filepath, search_prompt):
                 content = f.read()
                 point = content.lower().index(search_prompt.lower())
                 if point != -1:
-                    chunk = content[
-                            content.index(search_prompt) - CHUNK_SIZE // 2:content.index(search_prompt)] + \
-                            search_prompt + content[content.index(search_prompt):content.index(search_prompt) + \
-                                                                                 len(search_prompt) + CHUNK_SIZE // 2]
+                    chunk = content[max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(
+                        search_prompt)] + content[content.index(search_prompt):content.index(search_prompt) + \
+                                                                               len(search_prompt) + CHUNK_SIZE // 2]
                     output_data.append({'chunk': chunk})
             return output_data
 
@@ -176,23 +175,28 @@ def search_in_file(filepath, search_prompt):
             point = content.lower().index(search_prompt.lower())
             if point != -1:
                 chunk = content[
-                        content.index(search_prompt) - CHUNK_SIZE // 2:content.index(search_prompt)] + \
-                        search_prompt + content[content.index(search_prompt):content.index(search_prompt) + \
-                                                                             len(search_prompt) + CHUNK_SIZE // 2]
+                        max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(search_prompt)] + \
+                        content[content.index(search_prompt):content.index(search_prompt) + len(search_prompt) + \
+                                                             CHUNK_SIZE // 2]
                 output_data.append({'chunk': chunk})
             return output_data
 
         elif filepath.endswith('.pdf'):
-            with (open(filepath, 'rb') as f):
-                reader = PdfReader(f)
-                content = ' '.join([page.extract_text() for page in reader.pages])
-                point = content.lower().index(search_prompt.lower())
-                if point != -1:
-                    chunk = content[
-                            content.index(search_prompt) - CHUNK_SIZE // 2:content.index(search_prompt)] + \
-                            search_prompt + content[content.index(search_prompt):content.index(search_prompt) + \
-                                                                                 len(search_prompt) + CHUNK_SIZE // 2]
-                    output_data.append({'chunk': chunk})
+            import fitz  # PyMuPDF
+
+            doc = fitz.open(filepath)
+            content = ""
+            for page in doc:
+                content += page.get_text()
+            point = content.lower().index(search_prompt.lower())
+            if point != -1:
+                chunk = content[
+                        max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(search_prompt)] + content[
+                                                                                                               content.index(
+                                                                                                                   search_prompt):content.index(
+                                                                                                                   search_prompt) + len(
+                                                                                                                   search_prompt) + CHUNK_SIZE // 2]
+                output_data.append({'chunk': chunk})
                 return output_data
         return False
 
