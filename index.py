@@ -1,5 +1,6 @@
 from flask import Flask, render_template, send_from_directory, abort
 import os
+import time
 from filters import register_filters
 from werkzeug.utils import redirect
 from flask import request
@@ -114,6 +115,7 @@ def inject_os():
 
 @app.route('/search_files')
 def search_files():
+    start_time = time.time()
     args = request.args
     filepath = args.getlist('current_dir')[0]
     search_prompt = args.getlist('search_term')[0]
@@ -145,6 +147,8 @@ def search_files():
                 item_list.append(
                     {"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
     pprint.pprint(item_list)
+    print()
+    print("--- %s seconds ---" % (time.time() - start_time))
     return render_template('files.html', files=item_list)
 
 
@@ -190,7 +194,7 @@ def search_in_file(filepath, search_prompt):
             for page in doc:
                 content += page.get_text()
             if len(content) == 0:
-                content = pdf_to_text(doc)
+                content = pdf_to_text(filepath)
             point = content.lower().index(search_prompt.lower())
             if point != -1:
                 chunk = content[
