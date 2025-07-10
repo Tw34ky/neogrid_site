@@ -18,6 +18,7 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>Path</th>
+                <th>Chunk</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +31,7 @@
                     </span>
                 </td>
                 <td>{{ file.path }}</td>
+                <td>{{ file.content.chunk }}</td>
             </tr>
             {% endfor %}
         </tbody>

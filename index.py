@@ -162,29 +162,55 @@ def db_expansion(filename, search_prompt):
 
 def search_in_file(filepath, search_prompt):
     try:
-        output_data = []
+        output_data = {"chunk": []}
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
-                point = content.lower().index(search_prompt.lower())
-                if point != -1:
-                    chunk = content[max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(
-                        search_prompt)] + content[content.index(search_prompt):content.index(search_prompt) + \
-                                                                               len(search_prompt) + CHUNK_SIZE // 2]
-                    output_data.append({'chunk': chunk})
-            return output_data
+                start_index = 0
+
+                while True:
+                    # Find the next occurrence of the substring
+                    index = content.find(search_prompt, start_index)
+                    if index == -1:  # No more occurrences found
+                        break
+
+                    # Calculate positions for extraction
+                    start = max(0, index - CHUNK_SIZE // 2)
+                    end = index + len(search_prompt) + CHUNK_SIZE // 2
+
+                    # Extract the chunk
+                    chunk = content[start:end]
+                    output_data["chunk"].append(chunk)
+
+                    # Move the search position forward
+                    start_index = index + len(search_prompt)
+                if len(output_data['chunk']) != 0:
+                    return output_data
+
 
         elif filepath.endswith('.docx'):
             doc = docx.Document(filepath)
             content = ' '.join([para.text for para in doc.paragraphs])
-            point = content.lower().index(search_prompt.lower())
-            if point != -1:
-                chunk = content[
-                        max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(search_prompt)] + \
-                        content[content.index(search_prompt):content.index(search_prompt) + len(search_prompt) + \
-                                                             CHUNK_SIZE // 2]
-                output_data.append({'chunk': chunk})
-            return output_data
+            start_index = 0
+
+            while True:
+                # Find the next occurrence of the substring
+                index = content.find(search_prompt, start_index)
+                if index == -1:  # No more occurrences found
+                    break
+
+                # Calculate positions for extraction
+                start = max(0, index - CHUNK_SIZE // 2)
+                end = index + len(search_prompt) + CHUNK_SIZE // 2
+
+                # Extract the chunk
+                chunk = content[start:end]
+                output_data["chunk"].append(chunk)
+
+                # Move the search position forward
+                start_index = index + len(search_prompt)
+            if len(output_data['chunk']) != 0:
+                return output_data
 
         elif filepath.endswith('.pdf'):
             import fitz  # PyMuPDF
@@ -195,13 +221,25 @@ def search_in_file(filepath, search_prompt):
                 content += page.get_text()
             if len(content) == 0:
                 content = pdf_to_text(filepath)
-            point = content.lower().index(search_prompt.lower())
-            if point != -1:
-                chunk = content[
-                        max(0, content.index(search_prompt) - CHUNK_SIZE // 2):content.index(search_prompt)] + \
-                        content[content.index(search_prompt):content.index(search_prompt) + len(search_prompt) + \
-                                                             CHUNK_SIZE // 2]
-                output_data.append({'chunk': chunk})
+            start_index = 0
+
+            while True:
+                # Find the next occurrence of the substring
+                index = content.find(search_prompt, start_index)
+                if index == -1:  # No more occurrences found
+                    break
+
+                # Calculate positions for extraction
+                start = max(0, index - CHUNK_SIZE // 2)
+                end = index + len(search_prompt) + CHUNK_SIZE // 2
+
+                # Extract the chunk
+                chunk = content[start:end]
+                output_data["chunk"].append(chunk)
+
+                # Move the search position forward
+                start_index = index + len(search_prompt)
+            if len(output_data['chunk']) != 0:
                 return output_data
         return False
 
