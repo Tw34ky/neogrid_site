@@ -7,34 +7,44 @@
     <title>File Explorer</title>
 </head>
 <div class="background-container">
-  <div class="background-image"></div>
+    <div class="background-image"></div>
 </div>
 <body>
-    <h1>Found elements</h1>
+<h1>Found elements</h1>
 
-    <table class="file-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Path</th>
-                <th>Chunk</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for file in files %}
-            <tr>
-                <td>{{ file.name }}</td>
-                <td>
+<table class="file-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Path</th>
+        <th>Chunk</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for file in files %}
+    <tr>
+        <td>{{ file.name }}</td>
+        <td>
                     <span class="file-type {{ file.type|lower }}">
                         {{ file.type }}
                     </span>
-                </td>
-                <td>{{ file.path }}</td>
-                <td>{{ file.content.chunk }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        </td>
+        <td>{{ file.path }}</td>
+        <td>
+            <div class="expandable-text" onclick="this.classList.toggle('expanded')">
+                {{ file.content.chunk }}
+              </div>
+            <!--
+            <details>
+                <summary> {{ file.content.chunk[0][0:[file.content.chunk[0] | length, 100] | min] }}</summary>
+                {{ file.content.chunk }}
+            </details>
+            -->
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 </body>
 </html>
