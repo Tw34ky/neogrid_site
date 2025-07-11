@@ -24,6 +24,9 @@ h1 {
     text-align: center;
     color: #333;
 }
+
+td:first-child { width: 33% ;}
+
 .file-table {
     width: 100%;
     border-collapse: collapse;
@@ -75,4 +78,14 @@ tr:last-of-type td:last-of-type {
 .document {
     background-color: #f8d7da;
     color: #721c24;
+}
+
+.expandable-text {
+max-height: 2em;
+overflow: hidden;
+transition: max-height 0.3s ease;
+cursor: pointer;
+}
+.expandable-text.expanded {
+max-height: 500px; /* Adjust based on your content */
 }
