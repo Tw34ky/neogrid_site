@@ -13,8 +13,6 @@ def pdf_to_text(pdf_path):
         for page in doc:
             pixmap = page.get_pixmap()
             image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
-            text = pytesseract.image_to_string(image, config=r'--oem 1 --psm 3', lang='eng+rus')
-
-    pprint.pprint(pdf_path, text)
-    print()
+            temp = pytesseract.image_to_string(image, config=r'--oem 1 --psm 3', lang='eng+rus')
+            text += temp
     return text
