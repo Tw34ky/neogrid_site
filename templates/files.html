@@ -33,7 +33,7 @@
         <td>{{ file.path }}</td>
         <td>
             <div class="expandable-text" onclick="this.classList.toggle('expanded')">
-                {{ file.content.chunk }}
+                {{ file.content.chunk | join(" ;\n") }}
               </div>
             <!--
             <details>
