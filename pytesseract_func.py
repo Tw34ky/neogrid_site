@@ -2,11 +2,12 @@ import pytesseract
 from PIL import Image, ImageFilter, ImageEnhance
 import os
 import fitz
+from globals import *
 
 
 def pdf_to_text(pdf_path):
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    os.environ["TESSDATA_PREFIX"] = r"C:\Program Files\Tesseract-OCR\tessdata"
+    pytesseract.pytesseract.tesseract_cmd = pytesseract_exe_path
+    os.environ["TESSDATA_PREFIX"] = tessdata_path
     text = ''
     with fitz.open(pdf_path) as doc:
         for page in doc:
