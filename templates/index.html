@@ -51,7 +51,6 @@
             <th>Name</th>
             <th class="size">Size</th>
             <th>Modified</th>
-            <th>Chunk</th>
         </tr>
         </thead>
         <tbody>
@@ -67,6 +66,8 @@
                    class="file">📄 {{ item.name }}</a>
                 {% endif %}
             </td>
+            <td> {{ item.size }} </td>
+            <td> {{ item.modified}} </td>
         </tr>
         {% endfor %}
         </tbody>

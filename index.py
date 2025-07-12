@@ -51,18 +51,43 @@ def browse(subpath):
 
 
 def list_files(directory):
+    def format_file_size(size_in_bytes):
+        import math
+
+        if size_in_bytes == 0:
+            return ''
+
+        units = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+        unit_index = min(int(math.log(size_in_bytes, 1024)), len(units) - 1)
+        size = size_in_bytes / (1024 ** unit_index)
+
+        if size.is_integer() or size >= 10 or unit_index == 0:
+            return f"{int(round(size))} {units[unit_index]}"
+        else:
+            return f"{size:.2f}".rstrip('0').rstrip('.') + f" {units[unit_index]}"
+
     # Get all files and directories
     items = []
     try:
         for item in os.listdir(directory):
             item_path = os.path.join(directory, item)
             try:
-                items.append({
-                    'name': item,
-                    'is_dir': os.path.isdir(item_path),
-                    'size': os.path.getsize(item_path) if not os.path.isdir(item_path) else 0,
-                    'modified': os.path.getmtime(item_path)
-                })
+                mod_time = time.localtime(os.path.getmtime(item_path))
+                name, is_dir, modified = item, os.path.isdir(item_path), f"{mod_time[2]}.{mod_time[1]}.{mod_time[0]} {mod_time[3]}:{mod_time[4]}"
+                if not os.path.isdir(item_path):
+                    items.append({
+                        'name': name,
+                        'is_dir': is_dir,
+                        'size': format_file_size(os.path.getsize(item_path)),
+                        'modified': modified
+                    })
+                else:
+                    items.append({
+                        'name': name,
+                        'is_dir': is_dir,
+                        'size': '',
+                        'modified': modified
+                    })
             except (OSError, PermissionError):
                 continue
         items.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
@@ -188,7 +213,7 @@ def search_in_file(filepath, search_prompt):
                     return output_data
 
 
-        elif filepath.endswith('.docx'):
+        elif filepath.endswith('.docx') or filepath.endswith('.doc'):
             doc = docx.Document(filepath)
             content = ' '.join([para.text for para in doc.paragraphs])
             start_index = 0
@@ -214,14 +239,38 @@ def search_in_file(filepath, search_prompt):
 
         elif filepath.endswith('.pdf'):
             import fitz  # PyMuPDF
+            with fitz.open(filepath) as doc:
+                content = ""
+                for page in doc:
+                    content += page.get_text()
+                if len(content) == 0:
+                    content = pdf_to_text(filepath)
+                start_index = 0
 
-            doc = fitz.open(filepath)
-            content = ""
-            for page in doc:
-                content += page.get_text()
-            if len(content) == 0:
-                content = pdf_to_text(filepath)
-            start_index = 0
+            while True:
+                # Find the next occurrence of the substring
+                index = content.find(search_prompt, start_index)
+                if index == -1:  # No more occurrences found
+                    break
+
+                # Calculate positions for extraction
+                start = max(0, index - CHUNK_SIZE // 2)
+                end = index + len(search_prompt) + CHUNK_SIZE // 2
+
+                # Extract the chunk
+                chunk = content[start:end]
+                output_data["chunk"].append(chunk)
+
+                # Move the search position forward
+                start_index = index + len(search_prompt)
+            if len(output_data['chunk']) != 0:
+                return output_data
+        elif filepath.endswith('.rtf'):
+            from striprtf.striprtf import rtf_to_text
+
+            with open(filepath) as infile:
+                content = infile.read()
+                content = rtf_to_text(content)
 
             while True:
                 # Find the next occurrence of the substring
