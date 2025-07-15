@@ -14,6 +14,11 @@ DATA_PATH = "data"
 
 
 def populate_database(params, documents: list[str]):
+    """
+
+    TO ADD PARAMETERS HANDLING
+
+    """
     chunks = split_documents(documents)
     add_to_chroma(chunks)
 

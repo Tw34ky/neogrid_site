@@ -1,14 +1,13 @@
-from flask import Flask, render_template, send_from_directory, abort
+from flask import Flask, render_template, send_from_directory, abort, request
 import os
 import time
 from filters import register_filters
 from werkzeug.utils import redirect
-from flask import request
 import docx
 from pytesseract_func import pdf_to_text
-# from PyPDF2 import PdfReader
 import pprint
 from globals import *
+import data_base_lib
 
 app = Flask(__name__)
 

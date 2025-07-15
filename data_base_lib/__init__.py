@@ -2,5 +2,8 @@
 
 from query_data import query_rag # This one does smth idk what
 
-from populate_database import populate_database # Takes
+from populate_database import populate_database # Takes chunks, populates database (duh)
+
+
+
 
