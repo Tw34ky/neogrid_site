@@ -185,7 +185,7 @@ def db_expansion(filename, search_prompt):
     return retrieved_chunks
 
 
-def search_in_file(filepath, search_prompt):
+def search_in_file(filepath: str, search_prompt: str):
     try:
         output_data = {"chunk": []}
         if filepath.endswith('.txt'):
@@ -216,26 +216,7 @@ def search_in_file(filepath, search_prompt):
         elif filepath.endswith('.docx') or filepath.endswith('.doc'):
             doc = docx.Document(filepath)
             content = ' '.join([para.text for para in doc.paragraphs])
-            start_index = 0
 
-            while True:
-                # Find the next occurrence of the substring
-                index = content.find(search_prompt, start_index)
-                if index == -1:  # No more occurrences found
-                    break
-
-                # Calculate positions for extraction
-                start = max(0, index - CHUNK_SIZE // 2)
-                end = index + len(search_prompt) + CHUNK_SIZE // 2
-
-                # Extract the chunk
-                chunk = content[start:end]
-                output_data["chunk"].append(chunk)
-
-                # Move the search position forward
-                start_index = index + len(search_prompt)
-            if len(output_data['chunk']) != 0:
-                return output_data
 
         elif filepath.endswith('.pdf'):
             import fitz  # PyMuPDF
@@ -245,26 +226,7 @@ def search_in_file(filepath, search_prompt):
                     content += page.get_text()
                 if len(content) == 0:
                     content = pdf_to_text(filepath)
-                start_index = 0
 
-            while True:
-                # Find the next occurrence of the substring
-                index = content.find(search_prompt, start_index)
-                if index == -1:  # No more occurrences found
-                    break
-
-                # Calculate positions for extraction
-                start = max(0, index - CHUNK_SIZE // 2)
-                end = index + len(search_prompt) + CHUNK_SIZE // 2
-
-                # Extract the chunk
-                chunk = content[start:end]
-                output_data["chunk"].append(chunk)
-
-                # Move the search position forward
-                start_index = index + len(search_prompt)
-            if len(output_data['chunk']) != 0:
-                return output_data
         elif filepath.endswith('.rtf'):
             from striprtf.striprtf import rtf_to_text
 
@@ -272,24 +234,6 @@ def search_in_file(filepath, search_prompt):
                 content = infile.read()
                 content = rtf_to_text(content)
 
-            while True:
-                # Find the next occurrence of the substring
-                index = content.find(search_prompt, start_index)
-                if index == -1:  # No more occurrences found
-                    break
-
-                # Calculate positions for extraction
-                start = max(0, index - CHUNK_SIZE // 2)
-                end = index + len(search_prompt) + CHUNK_SIZE // 2
-
-                # Extract the chunk
-                chunk = content[start:end]
-                output_data["chunk"].append(chunk)
-
-                # Move the search position forward
-                start_index = index + len(search_prompt)
-            if len(output_data['chunk']) != 0:
-                return output_data
         return False
 
     except Exception as e:
