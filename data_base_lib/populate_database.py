@@ -1,4 +1,3 @@
-import argparse
 import os
 import shutil
 from langchain_community.document_loaders.directory import DirectoryLoader
@@ -14,31 +13,20 @@ CHROMA_PATH = "chroma"
 DATA_PATH = "data"
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--reset", action="store_true", help="Reset the database.")
-    args = parser.parse_args()
-    if args.reset:
-        print("Обнуление базы данных")
-        clear_database()
-
-    documents = load_documents()
+def populate_database(params, documents: list[str]):
     chunks = split_documents(documents)
     add_to_chroma(chunks)
 
 
-def load_documents():
-    document_loader = DirectoryLoader(DATA_PATH)
-    return document_loader.load()
 
-
-def split_documents(documents: list[Document]):
+def split_documents(documents: list[str]):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=600,
         chunk_overlap=80,
         length_function=len,
         is_separator_regex=False,
     )
+    documents = text_splitter.create_documents(documents)
     return text_splitter.split_documents(documents)
 
 

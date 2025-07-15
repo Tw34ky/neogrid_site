@@ -126,7 +126,7 @@ def list_files(directory):
 
 
 @app.route('/download/<path:filename>')
-def download(filename):
+def download(filename: str):
     directory = os.path.dirname(filename)
     file = os.path.basename(filename)
     return send_from_directory(directory, file, as_attachment=False)
@@ -178,45 +178,26 @@ def search_files():
 
 
 def db_expansion(filename, search_prompt):
-    retrieved_chunks = search_in_file(filename, search_prompt)
+    retrieved_data = search_in_file(filename)
+
     """
     ig some db code idk    
     """
-    return retrieved_chunks
+    return retrieved_data
 
 
-def search_in_file(filepath: str, search_prompt: str):
+def search_in_file(filepath: str):
     try:
-        output_data = {"chunk": []}
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
-                start_index = 0
-
-                while True:
-                    # Find the next occurrence of the substring
-                    index = content.find(search_prompt, start_index)
-                    if index == -1:  # No more occurrences found
-                        break
-
-                    # Calculate positions for extraction
-                    start = max(0, index - CHUNK_SIZE // 2)
-                    end = index + len(search_prompt) + CHUNK_SIZE // 2
-
-                    # Extract the chunk
-                    chunk = content[start:end]
-                    output_data["chunk"].append(chunk)
-
-                    # Move the search position forward
-                    start_index = index + len(search_prompt)
-                if len(output_data['chunk']) != 0:
-                    return output_data
+                return content
 
 
         elif filepath.endswith('.docx') or filepath.endswith('.doc'):
             doc = docx.Document(filepath)
             content = ' '.join([para.text for para in doc.paragraphs])
-
+            return content
 
         elif filepath.endswith('.pdf'):
             import fitz  # PyMuPDF
@@ -226,6 +207,7 @@ def search_in_file(filepath: str, search_prompt: str):
                     content += page.get_text()
                 if len(content) == 0:
                     content = pdf_to_text(filepath)
+                return content
 
         elif filepath.endswith('.rtf'):
             from striprtf.striprtf import rtf_to_text
@@ -233,6 +215,7 @@ def search_in_file(filepath: str, search_prompt: str):
             with open(filepath) as infile:
                 content = infile.read()
                 content = rtf_to_text(content)
+                return content
 
         return False
 
