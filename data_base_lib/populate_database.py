@@ -3,7 +3,7 @@ import shutil
 from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
-from get_embedding_function import get_embedding_function
+from data_base_lib.get_embedding_function import get_embedding_function
 from langchain_community.vectorstores import Chroma
 import warnings
 
@@ -19,12 +19,12 @@ def populate_database(params, documents: list[str]):
     TO ADD PARAMETERS HANDLING
 
     """
-    chunks = split_documents(documents)
+    chunks = create_chunk_docs(documents)
     add_to_chroma(chunks)
 
 
 
-def split_documents(documents: list[str]):
+def create_chunk_docs(documents: list[str]):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=600,
         chunk_overlap=80,

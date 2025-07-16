@@ -20,6 +20,7 @@ BASE_DIR = os.path.abspath(os.path.expanduser('~'))  # Ensure absolute path
 
 @app.route('/')
 def index():
+
     return list_files(BASE_DIR)
 
 
@@ -131,7 +132,6 @@ def download(filename: str):
     return send_from_directory(directory, file, as_attachment=False)
 
 
-# Add os module to template globals
 @app.context_processor
 def inject_os():
     return {'os': os}
@@ -165,27 +165,31 @@ def search_files():
         for file in files:
             if file.endswith('.txt') or file.endswith('.docx') or file.endswith('.pdf'):
                 item = f"{root}/{file}".replace('\\', '/')
-                file_text = db_expansion(filename=item, search_prompt=search_prompt)
+                file_text = db_expansion(filename=item)
                 if not file_text:
                     continue
-                item_list.append(
-                    {"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
+                # item_list.append(
+                #     {"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
     pprint.pprint(item_list)
     print()
     print("--- %s seconds ---" % (time.time() - start_time))
-    return render_template('files.html', files=item_list)
+    search_prompt = data_base_lib.query_rag(search_prompt)
+    return render_template('files.html', lang_model_ans=search_prompt, files=item_list)
 
 
-def db_expansion(filename, search_prompt):
-    retrieved_data = search_in_file(filename)
+def db_expansion(filename):
+    retrieved_data = parse_file(filename)
+    if retrieved_data:
+        params = []
+        data_base_lib.populate_database(params, filename)
+        """
+        ig some db code idk    
+        """
+        return retrieved_data
+    return None
 
-    """
-    ig some db code idk    
-    """
-    return retrieved_data
 
-
-def search_in_file(filepath: str):
+def parse_file(filepath: str):
     try:
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8') as f:
@@ -215,7 +219,6 @@ def search_in_file(filepath: str):
                 content = infile.read()
                 content = rtf_to_text(content)
                 return content
-
         return False
 
     except Exception as e:

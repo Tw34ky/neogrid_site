@@ -1,8 +1,8 @@
 # import argparse
-from langchain.vectorstores.chroma import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
-from get_embedding_function import get_embedding_function
+from data_base_lib.get_embedding_function import get_embedding_function
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
