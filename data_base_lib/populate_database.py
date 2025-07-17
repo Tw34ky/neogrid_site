@@ -6,9 +6,11 @@ from langchain.schema.document import Document
 from data_base_lib.get_embedding_function import get_embedding_function
 from langchain_community.vectorstores import Chroma
 import warnings
+import chromadb
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+chromadb.api.client.SharedSystemClient.clear_system_cache()
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
 

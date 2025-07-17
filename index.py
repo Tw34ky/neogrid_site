@@ -5,22 +5,23 @@ from filters import register_filters
 from werkzeug.utils import redirect
 import docx
 from pytesseract_func import pdf_to_text
-import pprint
 from globals import *
 import data_base_lib
+import indexation_check
+
 
 app = Flask(__name__)
 
 # Register custom filters
 register_filters(app)
 
-# Configuration - set your base directory here
-BASE_DIR = os.path.abspath(os.path.expanduser('~'))  # Ensure absolute path
 
 
 @app.route('/')
 def index():
-
+    rebasing_check_needed = indexation_check.check()
+    if rebasing_check_needed:
+        redirect(restart_database())
     return list_files(BASE_DIR)
 
 
@@ -137,13 +138,24 @@ def inject_os():
     return {'os': os}
 
 
-@app.route('/search_files')
-def search_files():
+@app.route('/invoke_prompt')
+def invoke_prompt():
     start_time = time.time()
     args = request.args
-    filepath = args.getlist('current_dir')[0]
-    search_prompt = args.getlist('search_term')[0]
-    filepath = filepath.replace('/', '\\')
+    search_prompt = data_base_lib.query_rag(args.getlist('search_term')[0])
+    print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
+    return search_prompt
+
+
+@app.route('/restart_database')
+def restart_database():
+    start_time = time.time()
+    args = request.args
+    print('Initiated database restart')
+    try:
+        filepath = args.getlist('current_dir')[0].replace('/', '\\')
+    except IndexError:
+        filepath = BASE_DIR
 
     # Safely join paths and ensure we stay within BASE_DIR
     try:
@@ -158,8 +170,6 @@ def search_files():
     if not os.path.exists(full_path):
         abort(404)
 
-    item_list = []
-
     # Рекурсивно обходим все директории и файлы
     for root, dirs, files in os.walk(full_path):
         for file in files:
@@ -168,13 +178,8 @@ def search_files():
                 file_text = db_expansion(filename=item)
                 if not file_text:
                     continue
-                # item_list.append(
-                #     {"type": item.rsplit('.')[-1], "path": item, "name": item.rsplit('/')[-1], "content": file_text})
-    pprint.pprint(item_list)
-    print()
-    print("--- %s seconds ---" % (time.time() - start_time))
-    search_prompt = data_base_lib.query_rag(search_prompt)
-    return render_template('files.html', lang_model_ans=search_prompt, files=item_list)
+    print("--- Database restart took %s seconds ---" % (time.time() - start_time))
+    return render_template('/')
 
 
 def db_expansion(filename):
@@ -182,9 +187,6 @@ def db_expansion(filename):
     if retrieved_data:
         params = []
         data_base_lib.populate_database(params, filename)
-        """
-        ig some db code idk    
-        """
         return retrieved_data
     return None
 
