@@ -16,7 +16,6 @@ app = Flask(__name__)
 register_filters(app)
 
 
-
 @app.route('/')
 def index():
     rebasing_check_needed = indexation_check.check()
@@ -124,6 +123,12 @@ def list_files(directory):
                            path_parts=path_parts,
                            base_dir=BASE_DIR,
                            search_term=search_term)
+
+
+@app.route('/settings_page')
+def settings_page():
+
+    return render_template('settings.html')
 
 
 @app.route('/download/<path:filename>')

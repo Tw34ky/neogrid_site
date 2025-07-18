@@ -9,7 +9,10 @@
 </head>
 <body>
 <div class="background-container">
-  <div class="background-image"></div>
+    <div class="background-image"></div>
+</div>
+<div>
+    <input class="settings" type="button" value="⚙️️" onclick="window.location.href='{{ url_for('settings_page') }}'">
 </div>
 <div class="container">
     <h1>NeoGrid</h1>
@@ -44,12 +47,11 @@
         {% endif %}
     </div>
 
-
     <table class="file-table">
         <thead>
         <tr>
             <th>Name</th>
-            <th class="size">Size</th>
+            <th>Size</th>
             <th>Modified</th>
         </tr>
         </thead>
@@ -66,8 +68,8 @@
                    class="file">📄 {{ item.name }}</a>
                 {% endif %}
             </td>
-            <td> {{ item.size }} </td>
-            <td> {{ item.modified}} </td>
+            <td> {{ item.size }}</td>
+            <td> {{ item.modified}}</td>
         </tr>
         {% endfor %}
         </tbody>
