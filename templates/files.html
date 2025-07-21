@@ -35,12 +35,6 @@
             <div class="expandable-text" onclick="this.classList.toggle('expanded')">
                 {{ file.content.chunk | join(" ;\n") }}
               </div>
-            <!--
-            <details>
-                <summary> {{ file.content.chunk[0][0:[file.content.chunk[0] | length, 100] | min] }}</summary>
-                {{ file.content.chunk }}
-            </details>
-            -->
         </td>
     </tr>
     {% endfor %}

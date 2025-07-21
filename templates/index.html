@@ -6,74 +6,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeoGrid</title>
+    <script type="text/javascript">
+        function loading() {
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("content").style.display = "none";
+    }
+    </script>
 </head>
 <body>
-<div class="background-container">
-    <div class="background-image"></div>
-</div>
-<div>
-    <input class="settings" type="button" value="⚙️️" onclick="window.location.href='{{ url_for('settings_page') }}'">
-</div>
-<div class="container">
-    <h1>NeoGrid</h1>
-
-    <div class="search-box">
-        <form action="{{ url_for('invoke_prompt') }}">
-            <input type="text" name="search_term" placeholder="Search in files..."
-                   value="{{ search_term if search_term }}" class="search-input">
-            <input type="hidden" name="current_dir" value="{{ current_dir }}">
-            <button type="submit"></button>
-            {% if is_search_results %}
-            <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
-               class="cancel-search">Show All</a>
-            {% endif %}
-        </form>
+<div id="loading">
+    <h1>Loading...</h1>
+    <p></p>
+    <img class="loading-gif" src="static/loading.gif">
+    <div class="background-container">
+        <div class="background-image"></div>
     </div>
-
-    <div class="breadcrumb">
-        <!-- Home link -->
-        <a href="{{ url_for('index') }}">🏠 Home</a>
-
-        <!-- Path segments -->
-        {% for part in path_parts %}
-        &nbsp;/&nbsp;
-        <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
-        {% endfor %}
-
-        <!-- Up link if not at root -->
-        {% if parent_dir %}
-        &nbsp;|&nbsp;
-        <a href="{{ url_for('browse', subpath=os.path.relpath(parent_dir, base_dir).replace('\\', '/')) }}">↑ Up</a>
-        {% endif %}
+</div>
+<div id="content">
+    <div class="background-container">
+        <div class="background-image"></div>
     </div>
+    <div>
+        <input class="settings" type="button" value="⚙️️"
+               onclick="window.location.href='{{ url_for('settings_page') }}'">
+    </div>
+    <div class="container">
+        <a href="{{ url_for('index') }}" style="text-decoration: none;">
+            <h1>NeoGrid</h1>
+        </a>
 
-    <table class="file-table">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Modified</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        {% for item in items %}
-        <tr>
-            <td>
-                {% if item.is_dir %}
-                <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
-                   class="dir">📁 {{ item.name }}</a>
-                {% else %}
-                <a href="{{ url_for('download', filename=current_dir + '/' + item.name) }}"
-                   class="file">📄 {{ item.name }}</a>
+        <div class="search-box">
+            <form action="{{ url_for('invoke_prompt') }}">
+                <input type="text" name="search_term" placeholder="Search in files..."
+                       value="{{ search_term if search_term }}" class="search-input">
+                <input type="hidden" name="current_dir" value="{{ current_dir }}">
+                <button type="submit" onclick="loading();"></button>
+                {% if is_search_results %}
+                <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
+                   class="cancel-search">Show All</a>
                 {% endif %}
-            </td>
-            <td> {{ item.size }}</td>
-            <td> {{ item.modified}}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </form>
+        </div>
+
+        <div class="breadcrumb">
+            <!-- Home link -->
+            <a href="{{ url_for('index') }}">🏠 Home</a>
+
+            <!-- Path segments -->
+            {% for part in path_parts %}
+            &nbsp;/&nbsp;
+            <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
+            {% endfor %}
+
+            <!-- Up link if not at root -->
+            {% if parent_dir %}
+            &nbsp;|&nbsp;
+            <a href="{{ url_for('browse', subpath=os.path.relpath(parent_dir, base_dir).replace('\\', '/')) }}">↑ Up</a>
+            {% endif %}
+        </div>
+
+        <table class="file-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Modified</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in items %}
+            <tr>
+                <td>
+                    {% if item.is_dir %}
+                    <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
+                       class="dir">📁 {{ item.name }}</a>
+                    {% else %}
+                    <a class="file">📄 {{ item.name }}</a>
+                    {% endif %}
+                </td>
+                <td> {{ item.size }}</td>
+                <td> {{ item.modified}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>

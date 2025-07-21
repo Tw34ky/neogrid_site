@@ -5,13 +5,13 @@ from filters import register_filters
 from werkzeug.utils import redirect
 import docx
 from pytesseract_func import pdf_to_text
-from globals import *
+import global_vars
 import data_base_lib
 import indexation_check
 
 
 app = Flask(__name__)
-
+global_current_dir = global_vars.BASE_DIR
 # Register custom filters
 register_filters(app)
 
@@ -19,15 +19,39 @@ register_filters(app)
 @app.route('/')
 def index():
     rebasing_check_needed = indexation_check.check()
-    if rebasing_check_needed:
-        redirect(restart_database())
-    return list_files(BASE_DIR)
+    if rebasing_check_needed or global_vars.reset_data_boolean:
+        restart_database()
+    return list_files(global_vars.BASE_DIR)
 
 
 @app.route('/browse/')
 def plug():
     return redirect('/')
 
+
+@app.route('/apply_settings', methods=['POST'])
+def apply_settings():
+    import inspect
+
+    variables = {}
+    print(request.form)
+    for name in dir(globals):
+        obj = getattr(globals, name)
+        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name in globals.SETTINGS:
+            variables[name] = obj
+    changed_vars = []
+    for field in request.form:
+        if variables.get(field) != request.form.get(field):
+            variables[field] = request.form.get(field)
+            changed_vars.append(field)
+
+    for var in changed_vars:
+        if var != 'reset_data_boolean':
+            exec(f'global_vars.{var} = "{variables.get(var)}"')
+        else:
+            exec(f'global_vars.{var} = "{True if variables.get(var) == "on" else False}"')
+    print(global_vars.reset_data_boolean)
+    return redirect('/')
 
 @app.route('/browse/<path:subpath>')
 def browse(subpath):
@@ -36,12 +60,12 @@ def browse(subpath):
 
     # Safely join paths and ensure we stay within BASE_DIR
     try:
-        full_path = os.path.abspath(os.path.join(BASE_DIR, subpath))
+        full_path = os.path.abspath(os.path.join(global_vars.BASE_DIR, subpath))
     except:
         abort(404)
 
     # Security check - prevent directory traversal
-    if not full_path.startswith(BASE_DIR):
+    if not full_path.startswith(global_vars.BASE_DIR):
         abort(403, description="Access denied")
 
     if not os.path.exists(full_path):
@@ -51,6 +75,7 @@ def browse(subpath):
 
 
 def list_files(directory):
+    global global_current_dir
     def format_file_size(size_in_bytes):
         import math
 
@@ -94,48 +119,44 @@ def list_files(directory):
     except (OSError, PermissionError):
         abort(403, description="Cannot access directory")
 
-    # Calculate relative path for navigation
-    rel_path = os.path.relpath(directory, BASE_DIR)
-    # Get parent directory if not at root
+    rel_path = os.path.relpath(directory, global_vars.BASE_DIR)
     parent_dir = None
-    if directory != BASE_DIR:
+    if directory != global_vars.BASE_DIR:
         parent_dir = os.path.dirname(directory)
-        # Ensure parent_dir is still within BASE_DIR
-        if not parent_dir.startswith(BASE_DIR):
-            parent_dir = BASE_DIR
-
-    # Pre-split the path parts for the template
+        if not parent_dir.startswith(global_vars.BASE_DIR):
+            parent_dir = global_vars.BASE_DIR
     path_parts = []
-    current_path = BASE_DIR
+    current_path = global_vars.BASE_DIR
     if rel_path != '.':
         for part in rel_path.split(os.sep):
             current_path = os.path.join(current_path, part)
             path_parts.append({
                 'name': part,
-                'path': os.path.relpath(current_path, BASE_DIR)
-            })
-
+                'path': os.path.relpath(current_path, global_vars.BASE_DIR)})
+    global_current_dir = directory
     search_term = request.args.get('search_term', '')
     return render_template('index.html',
                            items=items,
                            current_dir=directory,
                            parent_dir=parent_dir,
                            path_parts=path_parts,
-                           base_dir=BASE_DIR,
+                           base_dir=global_vars.BASE_DIR,
                            search_term=search_term)
 
 
 @app.route('/settings_page')
 def settings_page():
+    import inspect
 
-    return render_template('settings.html')
+    variables = {}
+    for name in dir(global_vars):
 
+        obj = getattr(global_vars, name)
+        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name in global_vars.SETTINGS:
+            variables[name] = {'value': obj, 'type': str(type(obj))[str(type(obj)).find("'")+1:str(type(obj)).rfind("'")]}
 
-@app.route('/download/<path:filename>')
-def download(filename: str):
-    directory = os.path.dirname(filename)
-    file = os.path.basename(filename)
-    return send_from_directory(directory, file, as_attachment=False)
+    del variables['BASE_DIR']
+    return render_template('settings.html', settings_data=variables)
 
 
 @app.context_processor
@@ -147,29 +168,53 @@ def inject_os():
 def invoke_prompt():
     start_time = time.time()
     args = request.args
+    render_template('settings.html', settings_data={'': ''})
     search_prompt = data_base_lib.query_rag(args.getlist('search_term')[0])
     print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
-    return search_prompt
+
+    def format_llm_response(response_text):
+        # Convert markdown-like formatting to HTML
+        formatted = response_text.replace('**', '<strong>').replace('**', '</strong>')
+        formatted = formatted.replace('*', '<em>').replace('*', '</em>')
+
+        # Add paragraph breaks
+        formatted = formatted.replace('\n\n', '</p><p>')
+
+        # Add code blocks (if you want to handle them)
+        formatted = formatted.replace('```python', '<pre><code class="language-python">')
+        formatted = formatted.replace('```', '</code></pre>')
+
+        return f'<div class="llm-response">{formatted}</div>'
+
+    print(search_prompt.split('\n'))
+    return render_template('answer.html', answer_text=search_prompt, edited_text=format_llm_response(search_prompt)) #answer_text=search_prompt
 
 
 @app.route('/restart_database')
 def restart_database():
+    global global_current_dir
+    data_base_lib.clear_database()
     start_time = time.time()
     args = request.args
     print('Initiated database restart')
+
     try:
         filepath = args.getlist('current_dir')[0].replace('/', '\\')
     except IndexError:
-        filepath = BASE_DIR
+        try:
+            filepath = global_current_dir
+        except ValueError:
+            filepath = global_vars.BASE_DIR
 
+    print(filepath)
     # Safely join paths and ensure we stay within BASE_DIR
     try:
-        full_path = os.path.abspath(os.path.join(BASE_DIR, filepath))
+        full_path = os.path.abspath(os.path.join(global_vars.BASE_DIR, filepath))
     except:
         abort(404)
 
     # Security check - prevent directory traversal
-    if not full_path.startswith(BASE_DIR):
+    if not full_path.startswith(global_vars.BASE_DIR):
         abort(403, description="Access denied")
 
     if not os.path.exists(full_path):
@@ -184,14 +229,20 @@ def restart_database():
                 if not file_text:
                     continue
     print("--- Database restart took %s seconds ---" % (time.time() - start_time))
-    return render_template('/')
+    global_vars.reset_data_boolean = False
+    return redirect('/')
 
 
 def db_expansion(filename):
     retrieved_data = parse_file(filename)
     if retrieved_data:
+        print(filename)
+        retrieved_data = retrieved_data.replace('\n', ' ')
+        retrieved_data = retrieved_data.replace('\xad', '')
+        retrieved_data = retrieved_data.replace('\u00ad', '')
+        retrieved_data = retrieved_data.replace('\N{SOFT HYPHEN}', '')
         params = []
-        data_base_lib.populate_database(params, filename)
+        data_base_lib.populate_database(params, retrieved_data)
         return retrieved_data
     return None
 
@@ -222,7 +273,7 @@ def parse_file(filepath: str):
         elif filepath.endswith('.rtf'):
             from striprtf.striprtf import rtf_to_text
 
-            with open(filepath) as infile:
+            with open(filepath, encoding='utf-8') as infile:
                 content = infile.read()
                 content = rtf_to_text(content)
                 return content
@@ -234,4 +285,4 @@ def parse_file(filepath: str):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(port=5000)

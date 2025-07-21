@@ -121,7 +121,6 @@ button:before {
 }
 
 /* кнопка настроек */
-
 input.settings {
     background: #7BA7AB;
     width: 50px;
@@ -132,4 +131,23 @@ input.settings {
     float: right;
     cursor: pointer;
     border-radius: 5px;
+}
+
+.loading-gif {
+    padding-top: 50px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -99px; /* -1 * image width / 2 */
+    margin-top: -100px; /* -1 * image height / 2 */
+}
+
+div#loading {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    display: none;
+
+    cursor: wait;
 }

@@ -4,7 +4,7 @@ from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from data_base_lib.get_embedding_function import get_embedding_function
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 import warnings
 import chromadb
 
@@ -22,18 +22,21 @@ def populate_database(params, documents: list[str]):
 
     """
     chunks = create_chunk_docs(documents)
+    print()
     add_to_chroma(chunks)
+    print(chunks)
 
 
 
 def create_chunk_docs(documents: list[str]):
+
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=600,
         chunk_overlap=80,
         length_function=len,
         is_separator_regex=False,
     )
-    documents = text_splitter.create_documents(documents)
+    documents = text_splitter.create_documents([documents])
     return text_splitter.split_documents(documents)
 
 
@@ -56,7 +59,6 @@ def add_to_chroma(chunks: list[Document]):
         print(f"Добавление новых фрагментов: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
-        db.persist()
     else:
         print("Новых фрагментов не обнаружено")
 
