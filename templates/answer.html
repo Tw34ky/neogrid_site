@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="{{ url_for('static',filename='styles/answer.css') }}" rel="stylesheet" type="text/css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoGrid</title>
+</head>
+<body>
+<div class="background-container">
+    <div class="background-image"></div>
+</div>
+
+<div class="container">
+    <a href="{{ url_for('index') }}" style="text-decoration: none;">
+        <h1>NeoGrid</h1>
+    </a>
+    <label class="answer-text">{{ answer_text }}</label>
+</div>

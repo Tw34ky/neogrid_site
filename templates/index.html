@@ -15,7 +15,9 @@
     <input class="settings" type="button" value="⚙️️" onclick="window.location.href='{{ url_for('settings_page') }}'">
 </div>
 <div class="container">
-    <h1>NeoGrid</h1>
+    <a href="{{ url_for('index') }}" style="text-decoration: none;">
+        <h1>NeoGrid</h1>
+    </a>
 
     <div class="search-box">
         <form action="{{ url_for('invoke_prompt') }}">
@@ -64,8 +66,7 @@
                 <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
                    class="dir">📁 {{ item.name }}</a>
                 {% else %}
-                <a href="{{ url_for('download', filename=current_dir + '/' + item.name) }}"
-                   class="file">📄 {{ item.name }}</a>
+                <a class="file">📄 {{ item.name }}</a>
                 {% endif %}
             </td>
             <td> {{ item.size }}</td>

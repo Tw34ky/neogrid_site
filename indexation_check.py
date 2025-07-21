@@ -1,6 +1,6 @@
 import time
 import difflib
-from neogrid_site.globals import BASE_DIR, SUPPORTED_FORMATS
+from neogrid_site.global_vars import BASE_DIR, SUPPORTED_FORMATS
 import os
 import hashlib
 
@@ -13,7 +13,7 @@ def compute_dir_hash(directory_path):
             if file.split('.')[-1] in SUPPORTED_FORMATS:
                 print(file_path)
                 try:
-                    with open(file_path, "rb") as f:
+                    with open(file_path, "rb", encoding='utf-8') as f:
                         dir_hash.update(f.read())
                     dir_hash.update(file.encode())
                 except (PermissionError, OSError):
@@ -29,7 +29,7 @@ def string_similarity(str1, str2):
 def check():
     is_check_necessary = False
     file_name = 'appdata/timedata_checks.txt'
-    with open(file_name, 'r+') as file:
+    with open(file_name, 'r+', encoding='utf-8') as file:
         data = file.read()
         start_time = time.time()
         if len(data) == 0:  # If the file is effectively empty
@@ -41,8 +41,9 @@ def check():
                 line_data = i.split(':')
                 try:
                     if line_data[0] == 'last_check_time':
-                        if time.time() - int(line_data[1]) > 86400:
-                            is_check_necessary = True
+                        # if time.time() - int(line_data[1]) > 86400:
+                        #     is_check_necessary = True
+                        pass
                     elif line_data[1] == 'last_hash_save':
                         if is_check_necessary:
                             current_hash = compute_dir_hash(BASE_DIR)
