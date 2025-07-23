@@ -1,168 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="{{ url_for('static',filename='styles/index.css') }}" rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local File Server</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #444;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-        .breadcrumb {
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            color: #666;
-        }
-        .file-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .file-table th, .file-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .file-table th {
-            background-color: #f5f5f5;
-        }
-        .file-table tr:hover {
-            background-color: #f9f9f9;
-        }
-        .dir {
-            color: #1a73e8;
-            font-weight: bold;
-        }
-        .file {
-            color: #333;
-        }
-        .size {
-            text-align: right;
-            font-family: monospace;
-        }
-        .modified {
-            font-size: 0.9em;
-            color: #666;
-        }
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>NeoGrid</title>
+    <script type="text/javascript">
+        function loading() {
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("content").style.display = "none";
+    }
+    </script>
 </head>
 <body>
-<div class="container">
-    <h1>File Browser</h1>
-
-    <!-- Add this to your CSS -->
-    <style>
-        .search-box {
-            margin: 15px 0;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 4px;
-        }
-        .search-input {
-            padding: 8px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .search-button {
-            padding: 8px 15px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .cancel-search {
-            margin-left: 10px;
-            color: #666;
-        }
-        .search-button:hover {
-            background: #45a049;
-        }
-    </style>
-
-    <div class="breadcrumb">
-        <!-- Home link -->
-        <a href="{{ url_for('index') }}">🏠 Home</a>
-
-        <!-- Path segments -->
-        {% for part in path_parts %}
-        &nbsp;/&nbsp;
-        <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
-        {% endfor %}
-
-        <!-- Up link if not at root -->
-        {% if parent_dir %}
-        &nbsp;|&nbsp;
-        <a href="{{ url_for('browse', subpath=os.path.relpath(parent_dir, base_dir).replace('\\', '/')) }}">↑ Up</a>
-        {% endif %}
+<div id="loading">
+    <h1>Loading...</h1>
+    <p></p>
+    <img class="loading-gif" src="static/loading.gif">
+    <div class="background-container">
+        <div class="background-image"></div>
     </div>
-
-    <!-- Add this near the top of your file, below the breadcrumb -->
-    <div class="search-box">
-        <form action="{{ url_for('search_files') }}">
-            <input type="text" name="search_term" placeholder="Search in files..."
-                   value="{{ search_term if search_term }}" class="search-input">
-            <input type="hidden" name="current_dir" value="{{ current_dir }}">
-            <button type="submit" class="search-button">Search</button>
-            {% if is_search_results %}
-            <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
-               class="cancel-search">Show All</a>
-            {% endif %}
-        </form>
+</div>
+<div id="content">
+    <div class="background-container">
+        <div class="background-image"></div>
     </div>
+    <div>
+        <input class="settings" type="button" value="⚙️️"
+               onclick="window.location.href='{{ url_for('settings_page') }}'">
+    </div>
+    <div class="container">
+        <a href="{{ url_for('index') }}" style="text-decoration: none;">
+            <h1>NeoGrid</h1>
+        </a>
 
-    <table class="file-table">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th class="size">Size</th>
-            <th>Modified</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        {% for item in items %}
-        <tr>
-            <td>
-                {% if item.is_dir %}
-                <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
-                   class="dir">📁 {{ item.name }}</a>
-                {% else %}
-                <a href="{{ url_for('download', filename=current_dir + '/' + item.name) }}"
-                   class="file">📄 {{ item.name }}</a>
+        <div class="search-box">
+            <form action="{{ url_for('invoke_prompt') }}">
+                <input type="text" name="search_term" placeholder="Search in files..."
+                       value="{{ search_term if search_term }}" class="search-input">
+                <input type="hidden" name="current_dir" value="{{ current_dir }}">
+                <button type="submit" onclick="loading();"></button>
                 {% if is_search_results %}
-                <div class="file-preview">
-                    <!-- You could add preview functionality here -->
-                </div>
+                <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
+                   class="cancel-search">Show All</a>
                 {% endif %}
-                {% endif %}
-            </td>
-            <!-- ... rest of your table cells ... -->
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </form>
+        </div>
+
+        <div class="breadcrumb">
+            <!-- Home link -->
+            <a href="{{ url_for('index') }}">🏠 Home</a>
+
+            <!-- Path segments -->
+            {% for part in path_parts %}
+            &nbsp;/&nbsp;
+            <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
+            {% endfor %}
+
+            <!-- Up link if not at root -->
+            {% if parent_dir %}
+            &nbsp;|&nbsp;
+            <a href="{{ url_for('browse', subpath=os.path.relpath(parent_dir, base_dir).replace('\\', '/')) }}">↑ Up</a>
+            {% endif %}
+        </div>
+
+        <table class="file-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Modified</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in items %}
+            <tr>
+                <td>
+                    {% if item.is_dir %}
+                    <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
+                       class="dir">📁 {{ item.name }}</a>
+                    {% else %}
+                    <a class="file">📄 {{ item.name }}</a>
+                    {% endif %}
+                </td>
+                <td> {{ item.size }}</td>
+                <td> {{ item.modified}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>

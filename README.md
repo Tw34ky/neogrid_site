@@ -1,1 +1,5 @@
-Student project for regional start-up competition. WIP together w/ @NeMoMinik. To be expanded (I have high hopes for this)
+# QUICK START
+
+## Download Tesseract, install it smwr and add abs path to globals "pytesseract_exe_path"
+## Download Tessdata packs, install them into Tesseract directory and add abs path to globals "tessdata_path"
+## Install requirements.txt (WIP)    
