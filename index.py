@@ -1,13 +1,10 @@
-from flask import Flask, render_template, send_from_directory, abort, request
-import os
-import time
+from flask import Flask, render_template, abort, request
+import os, time
 from filters import register_filters
 from werkzeug.utils import redirect
 import docx
 from pytesseract_func import pdf_to_text
-import global_vars
-import data_base_lib
-import indexation_check
+import global_vars, answer_formatting, data_base_lib, indexation_check
 
 
 app = Flask(__name__)
@@ -168,26 +165,9 @@ def inject_os():
 def invoke_prompt():
     start_time = time.time()
     args = request.args
-    render_template('settings.html', settings_data={'': ''})
     search_prompt = data_base_lib.query_rag(args.getlist('search_term')[0])
     print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
-
-    def format_llm_response(response_text):
-        # Convert markdown-like formatting to HTML
-        formatted = response_text.replace('**', '<strong>').replace('**', '</strong>')
-        formatted = formatted.replace('*', '<em>').replace('*', '</em>')
-
-        # Add paragraph breaks
-        formatted = formatted.replace('\n\n', '</p><p>')
-
-        # Add code blocks (if you want to handle them)
-        formatted = formatted.replace('```python', '<pre><code class="language-python">')
-        formatted = formatted.replace('```', '</code></pre>')
-
-        return f'<div class="llm-response">{formatted}</div>'
-
-    print(search_prompt.split('\n'))
-    return render_template('answer.html', answer_text=search_prompt, edited_text=format_llm_response(search_prompt)) #answer_text=search_prompt
+    return render_template('answer.html', answer_text=search_prompt, edited_text=answer_formatting.format_llm_response(search_prompt))
 
 
 @app.route('/restart_database')
@@ -242,7 +222,8 @@ def db_expansion(filename):
         retrieved_data = retrieved_data.replace('\u00ad', '')
         retrieved_data = retrieved_data.replace('\N{SOFT HYPHEN}', '')
         params = []
-        data_base_lib.populate_database(params, retrieved_data)
+        metadata = {'source': filename}
+        data_base_lib.populate_database(params, retrieved_data, metadata)
         return retrieved_data
     return None
 
