@@ -5,10 +5,12 @@ body {
     padding: 20px;
     color: #333;
 }
+
 .container {
     max-width: 1000px;
     margin: 0 auto;
 }
+
 h1 {
     font-family: Century Gothic, serif;
     font-size: 7.2em;
@@ -31,6 +33,18 @@ h1 {
   height: 200%;
   background: linear-gradient(30deg,rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%);
   background-size: cover; /* Растягиваем изображение, чтобы покрыть всю область */
+}
+
+.sources {
+    display: block;
+    margin: 0 auto;
+    padding: 16px;
+    border: solid;
+    text-align: left;
+    border: 2px solid #7BA7AB;
+    border-radius: 5px 5px 5px 5px;
+    outline: none;
+    background: #F9F0DA;
 }
 
 .llm-response {

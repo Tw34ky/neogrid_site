@@ -115,7 +115,6 @@ input:checked + .slider:before {
 button.save-and-submit {
     display: block;
     margin: 0 auto;
-
     border: solid;
     width: 50%;
     padding: 10px;

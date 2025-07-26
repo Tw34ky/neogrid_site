@@ -32,7 +32,7 @@ def format_llm_response(response_text):
 
             return highlight(code, lexer, HtmlFormatter(
                 noclasses=True,
-                style='colorful',
+                style='sas',
                 linenos=False
             ))
         except:
