@@ -167,7 +167,7 @@ def invoke_prompt():
     args = request.args
     search_prompt, sources = data_base_lib.query_rag(args.getlist('search_term')[0])
     print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
-    return render_template('answer.html', answer_text=search_prompt, edited_text=answer_formatting.format_llm_response(search_prompt), sources=sources)
+    return render_template('answer.html', answer_text=search_prompt, edited_text=answer_formatting.format_llm_response(search_prompt), sources=set(sources))
 
 
 @app.route('/restart_database')
