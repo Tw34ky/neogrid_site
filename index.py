@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, render_template, abort, request
 import os, time
 from filters import register_filters
@@ -5,7 +7,6 @@ from werkzeug.utils import redirect
 import docx, pprint
 from pytesseract_func import pdf_to_text
 import global_vars, answer_formatting, data_base_lib, indexation_check
-
 
 app = Flask(__name__)
 global_current_dir = global_vars.BASE_DIR
@@ -50,6 +51,7 @@ def apply_settings():
     print(global_vars.reset_data_boolean)
     return redirect('/')
 
+
 @app.route('/browse/<path:subpath>')
 def browse(subpath):
     # Replace any forward slashes with backslashes (for Windows paths)
@@ -73,6 +75,7 @@ def browse(subpath):
 
 def list_files(directory):
     global global_current_dir
+
     def format_file_size(size_in_bytes):
         import math
 
@@ -95,7 +98,8 @@ def list_files(directory):
             item_path = os.path.join(directory, item)
             try:
                 mod_time = time.localtime(os.path.getmtime(item_path))
-                name, is_dir, modified = item, os.path.isdir(item_path), f"{mod_time[2]}.{mod_time[1]}.{mod_time[0]} {mod_time[3]}:{mod_time[4]}"
+                name, is_dir, modified = item, os.path.isdir(
+                    item_path), f"{mod_time[2]}.{mod_time[1]}.{mod_time[0]} {mod_time[3]}:{mod_time[4]}"
                 if not os.path.isdir(item_path):
                     items.append({
                         'name': name,
@@ -149,8 +153,10 @@ def settings_page():
     for name in dir(global_vars):
 
         obj = getattr(global_vars, name)
-        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name in global_vars.SETTINGS:
-            variables[name] = {'value': obj, 'type': str(type(obj))[str(type(obj)).find("'")+1:str(type(obj)).rfind("'")]}
+        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith(
+                '__')) and name in global_vars.SETTINGS:
+            variables[name] = {'value': obj,
+                               'type': str(type(obj))[str(type(obj)).find("'") + 1:str(type(obj)).rfind("'")]}
 
     del variables['BASE_DIR']
     return render_template('settings.html', settings_data=variables)
@@ -167,7 +173,8 @@ def invoke_prompt():
     args = request.args
     search_prompt, sources = data_base_lib.query_rag(args.getlist('search_term')[0])
     print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
-    return render_template('answer.html', answer_text=search_prompt, edited_text=answer_formatting.format_llm_response(search_prompt), sources=set(sources))
+    return render_template('answer.html', answer_text=search_prompt,
+                           edited_text=answer_formatting.format_llm_response(search_prompt), sources=set(sources))
 
 
 @app.route('/restart_database')

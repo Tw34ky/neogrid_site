@@ -7,6 +7,6 @@ SUPPORTED_FORMATS = ['rtf', 'pdf', 'docx', 'txt', 'doc']
 
 SETTINGS = ['BASE_DIR', 'pytesseract_exe_path', 'tessdata_path', 'reset_data_boolean']
 
-BASE_DIR = os.path.abspath(os.path.expanduser('~'))
+BASE_DIR = r"C:\Users\Тимофей\Documents" # os.path.abspath(os.path.expanduser('~'))
 
 reset_data_boolean = False

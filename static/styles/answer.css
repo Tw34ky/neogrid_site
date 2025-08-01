@@ -1,3 +1,5 @@
+@import "background.css"
+
 body {
     font-family: Century Gothic, serif;
     line-height: 1.6;
@@ -17,25 +19,12 @@ h1 {
     text-align: center;
     color: #444;
 }
-
-.background-container {
-  width: 100%;
-  height: 100vh; /* Заполняет высоту экрана */
-  overflow: hidden; /* Скрывает выходящее за границы изображение */
-  position: fixed; /* Фиксирует фон на месте */
-  top: 0;
-  left: 0;
-  z-index: -1; /* Размещает фон под контентом */
-}
-
-.background-image {
-  width: 100%; /* Увеличиваем ширину, чтобы было куда перемещать */
-  height: 200%;
-  background: linear-gradient(30deg,rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%);
-  background-size: cover; /* Растягиваем изображение, чтобы покрыть всю область */
+h1 a {
+  display: inline-block; /* Limits click area to text */
 }
 
 .sources {
+    font-family: Century Gothic, serif;
     display: block;
     margin: 0 auto;
     padding: 16px;
@@ -48,6 +37,8 @@ h1 {
 }
 
 .llm-response {
+    font-family: Century Gothic, serif;
+    font-size: 24px;
     display: block;
     margin: 0 auto;
     padding: 16px;
@@ -60,16 +51,22 @@ h1 {
 }
 
 .-response p {
+    font-size: 24px;
+    font-family: Century Gothic, serif;
     margin-bottom: 16px;
 }
 
 .llm-response strong {
+    font-family: Century Gothic;
+    font-size: 24px;
     color: #2c3e50;
     font-weight: 600;
 }
 
 .llm-response em {
     color: #7f8c8d;
+    font-family: Century Gothic, serif;
+    font-size: 24px;
     font-style: italic;
 }
 
@@ -77,6 +74,8 @@ h1 {
     background: #282c34;
     color: #abb2bf;
     padding: 16px;
+    font-size: 24px;
+    font-family: Century Gothic, serif;
     border-radius: 4px;
     overflow-x: auto;
     margin: 20px 0;
