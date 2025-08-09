@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link href="{{ url_for('static',filename='styles/index.css') }}" rel="stylesheet" type="text/css"/>
+    <link href="{{ url_for('static',filename='styles/background.css') }}" rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeoGrid</title>
@@ -15,9 +16,9 @@
 </head>
 <body>
 <div id="loading">
-    <h1>Loading...</h1>
+    <h1>Loading..</h1>
     <p></p>
-    <img class="loading-gif" src="static/loading.gif">
+    <div class="lds-dual-ring"></div>
     <div class="background-container">
         <div class="background-image"></div>
     </div>
@@ -26,10 +27,10 @@
     <div class="background-container">
         <div class="background-image"></div>
     </div>
-    <div>
-        <input class="settings" type="button" value="⚙️️"
-               onclick="window.location.href='{{ url_for('settings_page') }}'">
+    <div class="button-container">
+        <button class="settings" onclick="window.location.href='{{ url_for('settings_page') }}'"> </button>
     </div>
+
     <div class="container">
         <a href="{{ url_for('index') }}" style="text-decoration: none;">
             <h1>NeoGrid</h1>
@@ -40,7 +41,7 @@
                 <input type="text" name="search_term" placeholder="Search in files..."
                        value="{{ search_term if search_term }}" class="search-input">
                 <input type="hidden" name="current_dir" value="{{ current_dir }}">
-                <button type="submit" onclick="loading();"></button>
+                <button class='search' type="submit" onclick="loading();"></button>
                 {% if is_search_results %}
                 <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
                    class="cancel-search">Show All</a>

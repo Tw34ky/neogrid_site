@@ -15,28 +15,27 @@ CHROMA_PATH = "chroma"
 DATA_PATH = "data"
 
 
-def populate_database(params, documents: list[str]):
+def populate_database(params, documents: list[str], metadata: dict):
     """
 
     TO ADD PARAMETERS HANDLING
 
     """
-    chunks = create_chunk_docs(documents)
+    chunks = create_chunk_docs(documents, metadata)
     print()
     add_to_chroma(chunks)
     print(chunks)
 
 
 
-def create_chunk_docs(documents: list[str]):
-
+def create_chunk_docs(documents: list[str], metadata: dict):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=600,
         chunk_overlap=80,
         length_function=len,
         is_separator_regex=False,
     )
-    documents = text_splitter.create_documents([documents])
+    documents = text_splitter.create_documents([documents], metadatas=[metadata])
     return text_splitter.split_documents(documents)
 
 
