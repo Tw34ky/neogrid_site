@@ -23,6 +23,8 @@ PROMPT_TEMPLATE = """
 {context}
 
 Ответь на вопрос ссылаясь только на запрос приведенный ранее: {question}
+
+Структурируй свой ответ.
 """
 
 
@@ -38,15 +40,13 @@ def query_rag(query_text: str):
     res_num = max(math.ceil(0.01 * len(db.get()['ids'])), 6)
     results = db.similarity_search_with_score(query_text, k=res_num)  # MAKE IT k * DB SIZE
     print("\n--- results found in %s seconds ---" % (time.time() - start_time))
-    print(results)
     context_list, acc_score = [], 0
     sorted_data = sorted(results, reverse=True, key=lambda item: item[1])
-    pprint.pprint(sorted_data)
     third_index = len(sorted_data) // 3
     sorted_data = sorted_data[:third_index]
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in sorted_data])
     # context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    print(len(context_text.split()))
+    print('\n--- Amount of words in a DB query - %s ---' % len(context_text.split()))
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
 
     prompt = prompt_template.format(context=context_text, question=query_text)
