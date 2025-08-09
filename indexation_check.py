@@ -1,6 +1,6 @@
 import time
 import difflib
-from neogrid_site.global_vars import BASE_DIR, SUPPORTED_FORMATS
+from global_vars import BASE_DIR, SUPPORTED_FORMATS
 import os
 import hashlib
 

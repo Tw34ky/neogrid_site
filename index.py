@@ -1,10 +1,8 @@
-import random
-
 from flask import Flask, render_template, abort, request
 import os, time
 from filters import register_filters
 from werkzeug.utils import redirect
-import docx, pprint
+import docx
 from pytesseract_func import pdf_to_text
 import global_vars, answer_formatting, data_base_lib, indexation_check
 
@@ -33,9 +31,9 @@ def apply_settings():
 
     variables = {}
     print(request.form)
-    for name in dir(globals):
-        obj = getattr(globals, name)
-        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name in globals.SETTINGS:
+    for name in dir(global_vars):
+        obj = getattr(global_vars, name)
+        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name in global_vars.SETTINGS:
             variables[name] = obj
     changed_vars = []
     for field in request.form:
