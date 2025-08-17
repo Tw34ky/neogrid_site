@@ -1,6 +1,6 @@
 import time
 import difflib
-from neogrid_site.global_vars import BASE_DIR, SUPPORTED_FORMATS
+from global_vars import BASE_DIR, SUPPORTED_FORMATS
 import os
 import hashlib
 
@@ -41,8 +41,8 @@ def check():
                 line_data = i.split(':')
                 try:
                     if line_data[0] == 'last_check_time':
-                        # if time.time() - int(line_data[1]) > 86400:
-                        #     is_check_necessary = True
+                        if time.time() - int(line_data[1]) > 86400:
+                            is_check_necessary = True
                         pass
                     elif line_data[1] == 'last_hash_save':
                         if is_check_necessary:

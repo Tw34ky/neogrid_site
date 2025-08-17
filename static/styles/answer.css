@@ -71,3 +71,27 @@ h1 {
 .llm-response code {
     font-family: 'Courier New', monospace;
 }
+
+.sources {
+    max-width: 1000px;
+    font-family: Century Gothic, serif;
+    display: block;
+    margin: 0 auto;
+    padding: 16px;
+    border: solid;
+    text-align: left;
+    border: 2px solid #7BA7AB;
+    border-radius: 5px 5px 5px 5px;
+    outline: none;
+    background: #F9F0DA;
+}
+
+button.file_ref {
+    font-family: Century Gothic, serif;
+    color: #282c34;
+    background: #F9F0DA;
+    text-align: left;
+    border-radius: 5px 5px 5px 5px;
+    cursor: pointer;
+
+}

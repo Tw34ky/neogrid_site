@@ -1,35 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link href="{{ url_for('static',filename='styles/index.css') }}" rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeoGrid</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="{{ url_for('static',filename='styles/index.css') }}" rel="stylesheet" type="text/css"/>
     <script type="text/javascript">
         function loading() {
-    document.getElementById("loading").style.display = "block";
-    document.getElementById("content").style.display = "none";
-    }
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("content").style.display = "none";
+        }
     </script>
 </head>
 <body>
 <div id="loading">
-    <h1>Loading...</h1>
+    <h1>Загрузка..</h1>
     <p></p>
-    <img class="loading-gif" src="static/loading.gif">
+    <div class="lds-dual-ring"></div>
     <div class="background-container">
         <div class="background-image"></div>
     </div>
 </div>
+
 <div id="content">
-    <div class="background-container">
+     <div class="background-container">
         <div class="background-image"></div>
     </div>
+
     <div>
-        <input class="settings" type="button" value="⚙️️"
+        <input class="settings" type="button" value="⚙️"
                onclick="window.location.href='{{ url_for('settings_page') }}'">
     </div>
+
     <div class="container">
         <a href="{{ url_for('index') }}" style="text-decoration: none;">
             <h1>NeoGrid</h1>
@@ -40,53 +43,55 @@
                 <input type="text" name="search_term" placeholder="Search in files..."
                        value="{{ search_term if search_term }}" class="search-input">
                 <input type="hidden" name="current_dir" value="{{ current_dir }}">
-                <button type="submit" onclick="loading();"></button>
+                <button class="submit_button" type="submit" onclick="loading();"></button>
                 {% if is_search_results %}
-                <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
-                   class="cancel-search">Show All</a>
+                    <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
+                       class="cancel-search">Show All</a>
                 {% endif %}
             </form>
         </div>
 
         <div class="breadcrumb">
-            <!-- Home link -->
             <a href="{{ url_for('index') }}">🏠 Home</a>
-
-            <!-- Path segments -->
             {% for part in path_parts %}
-            &nbsp;/&nbsp;
-            <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
+                &nbsp;/&nbsp;
+                <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
             {% endfor %}
-
-            <!-- Up link if not at root -->
             {% if parent_dir %}
-            &nbsp;|&nbsp;
-            <a href="{{ url_for('browse', subpath=os.path.relpath(parent_dir, base_dir).replace('\\', '/')) }}">↑ Up</a>
+                &nbsp;|&nbsp;
+                <a href="{{ url_for('browse', subpath=os.path.relpath(parent_dir, base_dir).replace('\\', '/')) }}">↑ Up</a>
             {% endif %}
         </div>
 
         <table class="file-table">
             <thead>
             <tr>
-                <th>Name</th>
-                <th>Size</th>
-                <th>Modified</th>
+                <th>Название</th>
+                <th>Размер</th>
+                <th>Изменен</th>
+                <th>Действия</th>
             </tr>
             </thead>
             <tbody>
-
             {% for item in items %}
             <tr>
                 <td>
                     {% if item.is_dir %}
-                    <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
-                       class="dir">📁 {{ item.name }}</a>
+                        <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
+                           class="dir">📁 {{ item.name }}</a>
                     {% else %}
-                    <a class="file">📄 {{ item.name }}</a>
+                        <span class="file">📄 {{ item.name }}</span>
                     {% endif %}
                 </td>
-                <td> {{ item.size }}</td>
-                <td> {{ item.modified}}</td>
+                <td>{{ item.size }}</td>
+                <td>{{ item.modified }}</td>
+                <td>
+                    {% if not item.is_dir %}
+                    <form action="{{ url_for('delete_file', filename=item.relative_path) }}" method="post" style="display:inline;">
+                        <button class="delete-btn" type="submit">Удалить</button>
+                    </form>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
             </tbody>

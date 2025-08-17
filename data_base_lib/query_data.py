@@ -22,7 +22,9 @@ PROMPT_TEMPLATE = """
 """
 
 
-def query_rag(query_text: str):
+def _query_rag(query_text: str):
+    import psutil
+    cpu_count_physical = psutil.cpu_count(logical=False)
     # Prepare the DB.
     embedding_function = get_embedding_function()
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
@@ -34,11 +36,38 @@ def query_rag(query_text: str):
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
-    model = OllamaLLM(model="llama3.1")
+    model = OllamaLLM(model="llama3.1", top_k=30, num_thread=cpu_count_physical - 1)
 
     response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
     formatted_response = f"{response_text}\nИсточники: {sources}"
     print(formatted_response)
-    return response_text
+    return response_text, sources
+
+
+def query_rag(query_text: str):
+    import pickle
+
+    def load_object(filename):
+        """Loads an object from a file using pickle."""
+        with open(filename, 'rb') as inp:
+            return pickle.load(inp)
+
+    # Load the saved retriever
+    retriever = load_object('retriever.pkl')
+    results = retriever.invoke(query_text)
+    import psutil
+    cpu_count_physical = psutil.cpu_count(logical=False)
+    context_text = "\n\n---\n\n".join([doc.page_content for doc in results])
+    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+    prompt = prompt_template.format(context=context_text, question=query_text)
+
+    model = OllamaLLM(model="llama3.1", num_thread=cpu_count_physical - 1, top_k=30)
+
+    response_text = model.invoke(prompt)
+
+    sources = [doc.metadata.get("id", None) for doc in results]
+    formatted_response = f"{response_text}\nИсточники: {sources}"
+    print(formatted_response)
+    return response_text, sources
