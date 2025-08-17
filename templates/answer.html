@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link href="{{ url_for('static',filename='styles/answer.css') }}" rel="stylesheet" type="text/css"/>
+    <link href="{{ url_for('static',filename='styles/background.css') }}" rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeoGrid</title>
@@ -33,6 +34,16 @@
     {% if edited_text %}
     <div class="llm-response">
         {{ edited_text|safe }}
+    </div>
+    <p></p>
+    <div class="sources">
+
+        Источники: <p></p>
+
+        {% for elem in sources %}
+            {{ elem }}
+            <p> </p>
+        {% endfor %}
     </div>
     {% endif %}
 </div>

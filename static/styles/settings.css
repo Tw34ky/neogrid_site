@@ -1,3 +1,5 @@
+@import "background.css"
+
 body {
     font-family: Century Gothic, serif;
     margin: 20px;
@@ -19,6 +21,7 @@ h1 {
 }
 
 .settings-table {
+    font-family: Century Gothic, serif;
     background-color: #F0F8FF;
     width: 100%;
     border-collapse: collapse;
@@ -46,28 +49,12 @@ h1 {
 }
 
 .setting_value {
+
     border: solid;
     border-color: #7BA7AB;
     font-size: 11pt;
     width: 350px;
     font-family: Century Gothic, serif;
-}
-
-.background-container {
-  width: 100%;
-  height: 100vh; /* Заполняет высоту экрана */
-  overflow: hidden; /* Скрывает выходящее за границы изображение */
-  position: fixed; /* Фиксирует фон на месте */
-  top: 0;
-  left: 0;
-  z-index: -1; /* Размещает фон под контентом */
-}
-
-.background-image {
-  width: 100%; /* Увеличиваем ширину, чтобы было куда перемещать */
-  height: 200%;
-  background: linear-gradient(30deg,rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%);
-  background-size: cover; /* Растягиваем изображение, чтобы покрыть всю область */
 }
 
 .switch {
@@ -111,11 +98,9 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
-
 button.save-and-submit {
     display: block;
     margin: 0 auto;
-
     border: solid;
     width: 50%;
     padding: 10px;
