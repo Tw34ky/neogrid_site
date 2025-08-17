@@ -1,19 +1,33 @@
-from flask import Flask, render_template, abort, request
-import os, time
+from flask import Flask, render_template, abort, request, redirect, url_for, jsonify
+import os, json, time, docx, pprint, global_vars, data_base_lib, indexation_check
 from filters import register_filters
 from werkzeug.utils import redirect
-import docx
 from pytesseract_func import pdf_to_text
-import global_vars, answer_formatting, data_base_lib, indexation_check
+from open_path import path_opener
+from replace_vars import update_global_vars
+
 
 app = Flask(__name__)
 global_current_dir = global_vars.BASE_DIR
-# Register custom filters
 register_filters(app)
+
+
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+META_FILE = 'files.json'
+
+
+def load_metadata():
+    if os.path.exists(META_FILE):
+        with open(META_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
 
 
 @app.route('/')
 def index():
+    import global_vars
     rebasing_check_needed = indexation_check.check()
     if rebasing_check_needed or global_vars.reset_data_boolean:
         restart_database()
@@ -33,20 +47,21 @@ def apply_settings():
     print(request.form)
     for name in dir(global_vars):
         obj = getattr(global_vars, name)
-        if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name in global_vars.SETTINGS:
+        if (not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name
+                in global_vars.SETTINGS):
             variables[name] = obj
     changed_vars = []
     for field in request.form:
+        if request.form.get('reset_data_boolean') == 'on':
+            variables['reset_data_boolean'] = True
+        elif request.form.get('reset_data_boolean') == 'off':
+            variables['reset_data_boolean'] = False
         if variables.get(field) != request.form.get(field):
             variables[field] = request.form.get(field)
             changed_vars.append(field)
 
-    for var in changed_vars:
-        if var != 'reset_data_boolean':
-            exec(f'global_vars.{var} = "{variables.get(var)}"')
-        else:
-            exec(f'global_vars.{var} = "{True if variables.get(var) == "on" else False}"')
-    print(global_vars.reset_data_boolean)
+    update_global_vars('global_vars.py', variables, changed_vars)
+
     return redirect('/')
 
 
@@ -171,8 +186,62 @@ def invoke_prompt():
     args = request.args
     search_prompt, sources = data_base_lib.query_rag(args.getlist('search_term')[0])
     print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
+
+    def format_llm_response(response_text):
+        # Convert markdown-like formatting to HTML
+        formatted = response_text.replace('**', '<strong>').replace('**', '</strong>')
+        formatted = formatted.replace('*', '<em>').replace('*', '</em>')
+
+        # Add paragraph breaks
+        formatted = formatted.replace('\n\n', '</p><p>')
+
+        # Add code blocks (if you want to handle them)
+        formatted = formatted.replace('```python', '<pre><code class="language-python">')
+        formatted = formatted.replace('```', '</code></pre>')
+
+        return f'<div class="llm-response">{formatted}</div>'
+
+    print(search_prompt.split('\n'))
     return render_template('answer.html', answer_text=search_prompt,
-                           edited_text=answer_formatting.format_llm_response(search_prompt), sources=set(sources))
+                           edited_text=format_llm_response(search_prompt), sources=sources)  # answer_text=search_prompt
+
+
+@app.route('/open', methods=['POST'])
+def open_file():
+    file_path = request.json.get('path')
+    print(request.json)
+    file_path = file_path[0:file_path.rfind(':')]
+    if file_path:
+        success = path_opener(file_path)
+        return jsonify({"status": "success" if success else "error"})
+    return jsonify({"status": "error", "message": "No path provided"}), 400
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return redirect(url_for('index'))
+
+    file = request.files['file']
+    if file.filename == '':
+        return redirect(url_for('index'))
+
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(filepath)
+    return redirect(url_for('index'))
+
+
+@app.route('/delete/<filename>', methods=['POST'])
+def delete_file(filename):
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+    files = load_metadata()
+    files = [f for f in files if f['name'] != filename]
+    # save_metadata(files)
+
+    return redirect(url_for('index'))
 
 
 @app.route('/restart_database')

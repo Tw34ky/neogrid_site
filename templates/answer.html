@@ -7,6 +7,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeoGrid</title>
+    <script>
+        function openPath(path) {
+                alert("Открытие файла");
+                fetch('/open', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({path: path})
+            })
+            .then(response => response.json())
+            .then(data => console.log(data));
+        }
+    </script>
 </head>
 <body>
 <div class="background-container">
@@ -32,7 +46,18 @@
         {% endfor %}
     </div>
     {% endif %}
-
+</div>
+<p></p>
+<div class="container">
+    <div class="sources">
+        <ul>
+            {% for path in sources %}
+            <li>
+                <button class='file_ref' onclick="openPath('{{ path }}')">{{ path }}</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 </body>
 </html>
