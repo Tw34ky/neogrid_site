@@ -1,4 +1,4 @@
-# import argparse
+import pprint
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
@@ -7,22 +7,22 @@ import warnings
 
 import math
 
-# warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 CHROMA_PATH = "chroma"
 
 PROMPT_TEMPLATE = """
-Ответь на вопрос ссылаясь исключительно на следующий запрос:
+Ответь на вопрос ссылаясь исключительно на следующие данные:
 
-{context}
+"{context}"
 
 ---
 
-Ответь на вопрос ссылаясь только на запрос приведенный ранее: {question}
+Ответь на вопрос ссылаясь только на данные приведенные ранее: "{question}. Постарайся привести объяснение, почему ты так ответил."
 """
 
 
-def _query_rag(query_text: str):
+def query_rag(query_text: str):
     import psutil
     cpu_count_physical = psutil.cpu_count(logical=False)
     # Prepare the DB.
@@ -30,7 +30,10 @@ def _query_rag(query_text: str):
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
     # Search the DB.
-    results = db.similarity_search_with_score(query_text, k=math.ceil(0.01*len(db.get()['ids']))) # MAKE IT k * DB SIZE
+    results = db.similarity_search_with_score(query_text, k=math.ceil(0.05*len(db.get()['ids']))) # MAKE IT k * DB SIZE
+    pprint.pprint(results)
+
+    # if results[0][]
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
@@ -46,7 +49,7 @@ def _query_rag(query_text: str):
     return response_text, sources
 
 
-def query_rag(query_text: str):
+def _query_rag(query_text: str):
     import pickle
 
     def load_object(filename):
@@ -55,7 +58,7 @@ def query_rag(query_text: str):
             return pickle.load(inp)
 
     # Load the saved retriever
-    retriever = load_object('retriever.pkl')
+    retriever = load_object('appdata/retriever.pkl')
     results = retriever.invoke(query_text)
     import psutil
     cpu_count_physical = psutil.cpu_count(logical=False)
@@ -69,5 +72,7 @@ def query_rag(query_text: str):
 
     sources = [doc.metadata.get("id", None) for doc in results]
     formatted_response = f"{response_text}\nИсточники: {sources}"
-    print(formatted_response)
+
+    print(f"--- Запрос {query_text} ---\n--- Вывод БД {prompt}\n--- Ответ {formatted_response} ---")
+
     return response_text, sources

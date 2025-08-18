@@ -187,6 +187,7 @@ def invoke_prompt():
     search_prompt, sources = data_base_lib.query_rag(args.getlist('search_term')[0])
     print("\n--- LLaMa answered in %s seconds ---" % (time.time() - start_time))
 
+    time.sleep(5)
     def format_llm_response(response_text):
         # Convert markdown-like formatting to HTML
         formatted = response_text.replace('**', '<strong>').replace('**', '</strong>')
@@ -201,9 +202,12 @@ def invoke_prompt():
 
         return f'<div class="llm-response">{formatted}</div>'
 
-    print(search_prompt.split('\n'))
+
     return render_template('answer.html', answer_text=search_prompt,
                            edited_text=format_llm_response(search_prompt), sources=sources)  # answer_text=search_prompt
+
+    # return render_template('answer.html', answer_text='Процедура реализации имущества гражданина была введена с 19.02.2025 и продолжалась до 22.07.2025, когда было назначено судебное заседание по вопросу о завершении процедуры.',
+    #                             edited_text=format_llm_response('Процедура реализации имущества гражданина была введена с 19.02.2025 и продолжалась до 22.07.2025, когда было назначено судебное заседание по вопросу о завершении процедуры.'), sources=r'C:/Users/Timofey/Desktop/Sample Data/Судебные акты/A45-409-2025_20250722_Opredelenie.pdf:9\\C:/Users/Timofey/Desktop/Sample Data/Судебные акты/A45-409-2025_20250722_Opredelenie.pdf:8\\C:/Users/Timofey/Desktop/Sample Data/Судебные акты/A45-409-2025_20250722_Opredelenie.pdf:1\\C:/Users/Timofey/Desktop/Sample Data/Судебные акты/A45-409-2025_20250722_Opredelenie.pdf:2'.split(r'\\'))  # answer_text=search_prompt
 
 
 @app.route('/open', methods=['POST'])
@@ -283,7 +287,7 @@ def restart_database():
                 if not file_text:
                     continue
     print("--- Database restart took %s seconds ---" % (time.time() - start_time))
-    global_vars.reset_data_boolean = False
+    update_global_vars('global_vars.py', {'reset_data_boolean': False}, ['reset_data_boolean'])
     return redirect('/')
 
 

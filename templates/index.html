@@ -40,7 +40,7 @@
 
         <div class="search-box">
             <form action="{{ url_for('invoke_prompt') }}">
-                <input type="text" name="search_term" placeholder="Search in files..."
+                <input type="text" name="search_term" placeholder="Задайте вопрос по вашим данным"
                        value="{{ search_term if search_term }}" class="search-input">
                 <input type="hidden" name="current_dir" value="{{ current_dir }}">
                 <button class="submit_button" type="submit" onclick="loading();"></button>

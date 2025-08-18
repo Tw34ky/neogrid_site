@@ -8,4 +8,4 @@ SUPPORTED_FORMATS = ['rtf', 'pdf', 'docx', 'txt', 'doc']
 
 BASE_DIR = r'C:\Users\Timofey\Desktop\Sample Data' # os.path.abspath(os.path.expanduser('~'))
 
-reset_data_boolean = True
+reset_data_boolean = False
