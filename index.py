@@ -1,5 +1,5 @@
 from flask import Flask, render_template, abort, request, redirect, url_for, jsonify
-import os, json, time, docx, pprint, global_vars, data_base_lib, indexation_check
+import os, json, time, docx, pprint, global_vars, data_base_lib, indexation_check, importlib
 from filters import register_filters
 from werkzeug.utils import redirect
 from pytesseract_func import pdf_to_text
@@ -27,9 +27,11 @@ def load_metadata():
 
 @app.route('/')
 def index():
-    import global_vars
-    rebasing_check_needed = indexation_check.check()
-    if rebasing_check_needed or global_vars.reset_data_boolean:
+    importlib.reload(global_vars)
+    # rebasing_check_needed = indexation_check.check()
+    # if rebasing_check_needed or
+    #     restart_database()
+    if global_vars.reset_data_boolean:
         restart_database()
     return list_files(global_vars.BASE_DIR)
 
@@ -50,16 +52,28 @@ def apply_settings():
         if (not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name
                 in global_vars.SETTINGS):
             variables[name] = obj
-    changed_vars = []
+    changed_vars = set()
     for field in request.form:
-        if request.form.get('reset_data_boolean') == 'on':
-            variables['reset_data_boolean'] = True
-        elif request.form.get('reset_data_boolean') == 'off':
-            variables['reset_data_boolean'] = False
         if variables.get(field) != request.form.get(field):
             variables[field] = request.form.get(field)
-            changed_vars.append(field)
+            changed_vars.add(field)
 
+    if request.form.get('reset_data_boolean') == 'on':
+        variables['reset_data_boolean'] = True
+        changed_vars.add('reset_data_boolean')
+    elif request.form.get('reset_data_boolean') == 'off':
+        variables['reset_data_boolean'] = False
+        changed_vars.add('reset_data_boolean')
+
+    if request.form.get('use_llm') == 'on':
+        variables['use_llm'] = True
+        changed_vars.add('use_llm')
+    elif request.form.get('use_llm') == 'off':
+        variables['use_llm'] = False
+        changed_vars.add('use_llm')
+
+    print(changed_vars)
+    print(variables)
     update_global_vars('global_vars.py', variables, changed_vars)
 
     return redirect('/')
@@ -161,10 +175,9 @@ def list_files(directory):
 @app.route('/settings_page')
 def settings_page():
     import inspect
-
+    importlib.reload(global_vars)
     variables = {}
     for name in dir(global_vars):
-
         obj = getattr(global_vars, name)
         if not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith(
                 '__')) and name in global_vars.SETTINGS:

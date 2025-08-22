@@ -14,7 +14,7 @@
         });
 
         function updateText(isOn) {
-          statusText.textContent = `Switch is ${isOn ? "ON" : "OFF"}`;
+          statusText.textContent = `Switch is ${isOn ? "True" : "False"}`;
         }
     </script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
@@ -37,8 +37,8 @@
         <table class="settings-table">
             <thead>
             <tr>
-                <th>Name</th>
-                <th>Value</th>
+                <th>Название настройки</th>
+                <th>Значение</th>
             </tr>
             </thead>
             <tbody>
@@ -47,13 +47,13 @@
                 <td>{{ setting }}</td>
                 <td>
                     {% if settings_data.get(setting)['type'] != 'bool' %}
-                        <label>Variable value: </label>
+                        <label>Текстовое значение: </label>
                         <input class='setting_value'
                                name="{{ setting }}"
                                type="text"
                                value="{{ settings_data.get(setting)['value'] }}"/>
                     {% else %}
-                    <label>Bool </label>
+                    <label>Нет/Да </label>
                         <label class="switch">
                             <input type="checkbox"
                                    name="{{ setting }}"
