@@ -12,7 +12,6 @@ PROMPT_TEMPLATE = """
 
 "{context}"
 
-
 Ответь на вопрос ссылаясь только на данные приведенные ранее: "{question}."
 """
 
@@ -29,7 +28,7 @@ def query_rag(query_text: str):
     # Search the DB.
     results = db.similarity_search_with_score(query_text, k=math.ceil(0.05*len(db.get()['ids']))) # MAKE IT k * DB SIZE
     pprint.pprint(results)
-
+    response_text = ''
     if global_vars.use_llm:
         context_text = "\n---\n".join([doc.page_content for doc, _score in results])
         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
@@ -37,12 +36,7 @@ def query_rag(query_text: str):
         model = OllamaLLM(model="llama3.1", top_k=30, num_thread=cpu_count_physical - 1)
         response_text = model.invoke(prompt)
 
-    chunks = []
-    for i in results:
-        print(i)
-        # chunks.append(db.get())
-
-    sources = [doc.metadata.get("id", None) for doc, _score in results]
+    sources = [{'name': doc.metadata.get("id", None)[0:doc.metadata.get("id", None).rfind(':')], 'content': db.get(doc.metadata['id'])['documents'][0]} for doc, _score in results]
     formatted_response = f"{response_text}\nИсточники: {sources}"
     print(formatted_response)
     return response_text, sources

@@ -44,15 +44,15 @@ def plug():
 @app.route('/apply_settings', methods=['POST'])
 def apply_settings():
     import inspect
-
+    importlib.reload(global_vars)
     variables = {}
-    print(request.form)
     for name in dir(global_vars):
         obj = getattr(global_vars, name)
         if (not (inspect.isfunction(obj) or inspect.isclass(obj) or name.startswith('__')) and name
                 in global_vars.SETTINGS):
             variables[name] = obj
     changed_vars = set()
+    print(request.form)
     for field in request.form:
         if variables.get(field) != request.form.get(field):
             variables[field] = request.form.get(field)
@@ -72,7 +72,6 @@ def apply_settings():
         variables['use_llm'] = False
         changed_vars.add('use_llm')
 
-    print(changed_vars)
     print(variables)
     update_global_vars('global_vars.py', variables, changed_vars)
 
@@ -215,7 +214,7 @@ def invoke_prompt():
 
         return f'<div class="llm-response">{formatted}</div>'
 
-
+    print(format_llm_response(search_prompt))
     return render_template('answer.html', answer_text=search_prompt,
                            edited_text=format_llm_response(search_prompt), sources=sources)  # answer_text=search_prompt
 
@@ -226,8 +225,6 @@ def invoke_prompt():
 @app.route('/open', methods=['POST'])
 def open_file():
     file_path = request.json.get('path')
-    print(request.json)
-    file_path = file_path[0:file_path.rfind(':')]
     if file_path:
         success = path_opener(file_path)
         return jsonify({"status": "success" if success else "error"})

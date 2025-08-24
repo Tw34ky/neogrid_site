@@ -9,8 +9,7 @@
     <title>NeoGrid</title>
     <script>
         function openPath(path) {
-                alert("Открытие файла");
-                fetch('/open', {
+            fetch('/open', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -31,20 +30,11 @@
     <a href="{{ url_for('index') }}" style="text-decoration: none;">
         <h1>NeoGrid</h1>
     </a>
-    {% if edited_text %}
-    <div class="llm-response">
-        {{ edited_text|safe }}
-    </div>
-    <p></p>
-<!--    <div class="sources">-->
-
-<!--        Источники: <p></p>-->
-
-<!--        {% for elem in sources %}-->
-<!--            {{ elem }}-->
-<!--            <p> </p>-->
-<!--        {% endfor %}-->
-<!--    </div>-->
+    {% if edited_text|length > 32 %}
+        <div class="llm-response">
+            {{ edited_text|safe }}
+        </div>
+        <p></p>
     {% endif %}
 </div>
 <p></p>
@@ -53,7 +43,10 @@
         <ul>
             {% for path in sources %}
             <li>
-                <button class='file_ref' onclick="openPath('{{ path }}')">{{ path }}</button>
+                <text class="search-res-title">📁 {{ path['name'] }}</text>
+                <br>
+                <button class='file-ref' onclick="openPath('{{ path['name'] }}')">Ссылка</button> <br>
+                <text class="search-res-body">...{{ path['content'] }}...<br></text>
             </li>
             {% endfor %}
         </ul>

@@ -99,12 +99,26 @@ h1 a {
     background: #F9F0DA;
 }
 
-button.file_ref {
+button.file-ref {
     font-family: Century Gothic, serif;
+    font-size: 16px;
     color: #282c34;
     background: #F9F0DA;
     text-align: left;
     border-radius: 5px 5px 5px 5px;
     cursor: pointer;
+}
 
+ul li {
+    padding-bottom: 14px;
+}
+
+text.search-res-title {
+    font-family: Century Gothic, serif;
+    font-size: 1em;
+}
+
+text.search-res-body {
+    font-family: Century Gothic, serif;
+    font-size: 16px;
 }

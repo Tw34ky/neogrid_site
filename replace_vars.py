@@ -11,9 +11,9 @@ def update_global_vars(file_path, variables, changed_vars):
             if element in line:
                 if not line_modified and line[0:8] != 'SETTINGS':  # Only modify once per line and make an exception for settings list
                     if element == 'reset_data_boolean':
-                        new_content.append(f"reset_data_boolean = {variables[element]}\n")
+                        new_content.append(f"reset_data_boolean = {str(variables[element]).capitalize()}\n")
                     elif element == 'use_llm':
-                        new_content.append(f"use_llm = {variables[element]}\n")
+                        new_content.append(f"use_llm = {str(variables[element]).capitalize()}\n")
                     else:
                         new_content.append(f"{element} = r'{variables[element]}'\n")
                     print(f"Replaced line: {line.strip()} with {new_content[-1].strip()}")
