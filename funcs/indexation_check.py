@@ -1,6 +1,6 @@
 import time
 import difflib
-from global_vars import BASE_DIR, SUPPORTED_FORMATS
+from funcs.global_vars import BASE_DIR, SUPPORTED_FORMATS
 import os
 import hashlib
 
@@ -28,7 +28,7 @@ def string_similarity(str1, str2):
 
 def check():
     is_check_necessary = False
-    file_name = 'appdata/timedata_checks.txt'
+    file_name = '../appdata/timedata_checks.txt'
     with open(file_name, 'r+', encoding='utf-8') as file:
         data = file.read()
         start_time = time.time()

@@ -1,4 +1,5 @@
-import pprint, math, global_vars, importlib
+import pprint, math, importlib
+from funcs import global_vars
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM

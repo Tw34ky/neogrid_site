@@ -1,10 +1,11 @@
 from flask import Flask, render_template, abort, request, redirect, url_for, jsonify
-import os, json, time, docx, pprint, global_vars, data_base_lib, indexation_check, importlib
-from filters import register_filters
+import os, json, time, docx, data_base_lib, importlib
+from funcs import global_vars
+from funcs.filters import register_filters
 from werkzeug.utils import redirect
-from pytesseract_func import pdf_to_text
-from open_path import path_opener
-from replace_vars import update_global_vars
+from funcs.pytesseract_func import pdf_to_text
+from funcs.open_path import path_opener
+from funcs.replace_vars import update_global_vars
 
 
 app = Flask(__name__)
@@ -73,7 +74,7 @@ def apply_settings():
         changed_vars.add('use_llm')
 
     print(variables)
-    update_global_vars('global_vars.py', variables, changed_vars)
+    update_global_vars('funcs/global_vars.py', variables, changed_vars)
 
     return redirect('/')
 
@@ -297,7 +298,7 @@ def restart_database():
                 if not file_text:
                     continue
     print("--- Database restart took %s seconds ---" % (time.time() - start_time))
-    update_global_vars('global_vars.py', {'reset_data_boolean': False}, ['reset_data_boolean'])
+    update_global_vars('funcs/global_vars.py', {'reset_data_boolean': False}, ['reset_data_boolean'])
     return redirect('/')
 
 
