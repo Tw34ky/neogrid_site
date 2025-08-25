@@ -1,8 +1,7 @@
 import pytesseract
 from PIL import Image, ImageFilter, ImageEnhance
-import os
 import fitz
-from global_vars import *
+from funcs.global_vars import *
 
 
 def pdf_to_text(pdf_path):

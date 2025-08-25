@@ -1,4 +1,5 @@
-import pprint, math, global_vars, importlib
+import pprint, math, importlib
+from funcs import global_vars
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
@@ -36,7 +37,7 @@ def query_rag(query_text: str):
         model = OllamaLLM(model="llama3.1", top_k=30, num_thread=cpu_count_physical - 1)
         response_text = model.invoke(prompt)
 
-    sources = [{'name': doc.metadata.get("id", None)[0:doc.metadata.get("id", None).rfind(':')], 'content': db.get(doc.metadata['id'])['documents'][0]} for doc, _score in results]
+    sources = reversed([{'name': doc.metadata.get("id", None)[0:doc.metadata.get("id", None).rfind(':')], 'content': db.get(doc.metadata['id'])['documents'][0]} for doc, _score in results])
     formatted_response = f"{response_text}\nИсточники: {sources}"
     print(formatted_response)
     return response_text, sources

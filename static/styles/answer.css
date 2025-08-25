@@ -100,6 +100,8 @@ h1 a {
 }
 
 button.file-ref {
+    padding-top: 14px;
+    padding-bottom: 14px;
     font-family: Century Gothic, serif;
     font-size: 16px;
     color: #282c34;
@@ -110,7 +112,7 @@ button.file-ref {
 }
 
 ul li {
-    padding-bottom: 14px;
+    padding-bottom: 20px;
 }
 
 text.search-res-title {
