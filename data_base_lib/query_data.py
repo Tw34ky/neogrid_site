@@ -1,7 +1,11 @@
 import pprint, math, importlib
+from typing import List
+
 from funcs import global_vars
+from langchain.retrievers import EnsembleRetriever
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
+from langchain_core.documents import Document
 from langchain_ollama import OllamaLLM
 from data_base_lib.get_embedding_function import get_embedding_function
 
@@ -17,6 +21,27 @@ PROMPT_TEMPLATE = """
 """
 
 
+def create_hybrid_retriever(query: str, vector_retriever=None, bm25_retriever=None) -> List[Document]:
+    # Retrieve documents and scores from retriever1
+    docs1, scores1 = zip(*vector_retriever.similarity_search_with_score(query, k=math.ceil(0.05*len(vector_retriever.get()['ids']))))
+    for doc, score in zip(docs1, scores1):
+        doc.metadata["score"] = score
+
+    # Retrieve documents and scores from bm25_retriever
+    bm25_retriever.k = math.ceil(0.05*len(vector_retriever.get()))
+    docs2, scores2 = zip(*bm25_retriever.invoke(query))
+    # for doc, score in zip(docs2, scores2):
+    #     doc.metadata["score"] = score
+
+    # Combine results from both retrievers
+    combined_docs = list(docs1) + list(docs2)
+
+    # Filter results by score threshold
+    filtered_docs = sorted([doc for doc in combined_docs], reverse=True) # if doc.metadata["score"] >= score_threshold]
+
+    return filtered_docs
+
+
 def query_rag(query_text: str):
     import psutil
 
@@ -25,9 +50,20 @@ def query_rag(query_text: str):
     # Prepare the DB.
     embedding_function = get_embedding_function()
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    chroma_retriever = db.as_retriever()
 
-    # Search the DB.
-    results = db.similarity_search_with_score(query_text, k=math.ceil(0.05*len(db.get()['ids']))) # MAKE IT k * DB SIZE
+    import pickle
+
+    def load_object(filename):
+        """Loads an object from a file using pickle."""
+        with open(filename, 'rb') as inp:
+            return pickle.load(inp)
+
+    # Load the saved retriever
+    bm25_retriever = load_object('appdata/retriever.pkl')
+    results = create_hybrid_retriever(query_text, bm25_retriever=bm25_retriever, vector_retriever=chroma_retriever)
+
+    # results = db.similarity_search_with_score(query_text, k=math.ceil(0.05*len(db.get()['ids']))) # MAKE IT k * DB SIZE
     pprint.pprint(results)
     response_text = ''
     if global_vars.use_llm:
@@ -70,3 +106,26 @@ def _query_rag(query_text: str):
     print(f"--- Запрос {query_text} ---\n--- Вывод БД {prompt}\n--- Ответ {formatted_response} ---")
 
     return response_text, sources
+
+
+def query_rag_2(query_text: str):
+
+    import pickle
+
+    def load_object(filename):
+        """Loads an object from a file using pickle."""
+        with open(filename, 'rb') as inp:
+            return pickle.load(inp)
+
+    # Load the saved retriever
+    embedding_function = get_embedding_function()
+    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    chroma_retriever = db.as_retriever()
+    print(type(chroma_retriever))
+    bm25_retriever = load_object('appdata/retriever.pkl')  # retriever 1
+    print(type(bm25_retriever))
+    ensemble_retriever = EnsembleRetriever(retrievers=[chroma_retriever,
+                                                       bm25_retriever],
+                                           weights=[0.5, 0.5])
+
+    ensemble_results = ensemble_retriever.invoke(query_text)

@@ -324,7 +324,6 @@ def parse_file(filepath: str):
                 content = f.read()
                 return content
 
-
         elif filepath.endswith('.docx') or filepath.endswith('.doc'):
             doc = docx.Document(filepath)
             content = ' '.join([para.text for para in doc.paragraphs])

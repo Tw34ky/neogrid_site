@@ -30,7 +30,7 @@ def populate_database(params, documents: list[str], metadata: dict):
     chunks = create_chunk_docs(documents, metadata)
     print()
     add_to_chroma(chunks)
-    # add_to_BM25(chunks)
+    add_to_BM25(chunks)
     print(chunks)
 
 
@@ -49,8 +49,8 @@ def add_to_BM25(documents):
 
 def create_chunk_docs(documents: list[str], metadata: dict):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=600,
-        chunk_overlap=80,
+        chunk_size=300,
+        chunk_overlap=50,
         length_function=len,
         is_separator_regex=False,
     )
