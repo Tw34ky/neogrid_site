@@ -21,24 +21,22 @@ PROMPT_TEMPLATE = """
 """
 
 
-def create_hybrid_retriever(query: str, vector_retriever=None, bm25_retriever=None) -> List[Document]:
+def create_hybrid_retriever(query: str, vector_db=None, bm25_retriever=None) -> List[Document]:
     # Retrieve documents and scores from retriever1
-    docs1, scores1 = zip(*vector_retriever.similarity_search_with_score(query, k=math.ceil(0.05*len(vector_retriever.get()['ids']))))
+    docs1, scores1 = zip(*vector_db.similarity_search_with_score(query, k=math.ceil(0.05*len(vector_db.get()['ids']))))
     for doc, score in zip(docs1, scores1):
         doc.metadata["score"] = score
 
     # Retrieve documents and scores from bm25_retriever
-    bm25_retriever.k = math.ceil(0.05*len(vector_retriever.get()))
-    docs2, scores2 = zip(*bm25_retriever.invoke(query))
-    # for doc, score in zip(docs2, scores2):
-    #     doc.metadata["score"] = score
-
+    bm25_retriever.k = math.ceil(0.05*len(vector_db.get()['ids']))
+    docs2 = bm25_retriever.invoke(query)
     # Combine results from both retrievers
     combined_docs = list(docs1) + list(docs2)
 
     # Filter results by score threshold
-    filtered_docs = sorted([doc for doc in combined_docs], reverse=True) # if doc.metadata["score"] >= score_threshold]
-
+    # 0.05 - random meaningless number
+    # filtered_docs = sorted([doc for doc in combined_docs if doc.metadata["score"] > 0.05], reverse=True) # if doc.metadata["score"] >= score_threshold]
+    filtered_docs = [doc for doc in combined_docs if doc.metadata["score"] > 0.2]
     return filtered_docs
 
 
@@ -61,19 +59,22 @@ def query_rag(query_text: str):
 
     # Load the saved retriever
     bm25_retriever = load_object('appdata/retriever.pkl')
-    results = create_hybrid_retriever(query_text, bm25_retriever=bm25_retriever, vector_retriever=chroma_retriever)
+    results = create_hybrid_retriever(query_text, bm25_retriever=bm25_retriever, vector_db=db)
 
     # results = db.similarity_search_with_score(query_text, k=math.ceil(0.05*len(db.get()['ids']))) # MAKE IT k * DB SIZE
-    pprint.pprint(results)
+
     response_text = ''
     if global_vars.use_llm:
-        context_text = "\n---\n".join([doc.page_content for doc, _score in results])
+        print()
+        pprint.pprint(results)
+        print()
+        context_text = "\n---\n".join([doc.page_content for doc in results])
         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
         prompt = prompt_template.format(context=context_text, question=query_text)
         model = OllamaLLM(model="llama3.1", top_k=30, num_thread=cpu_count_physical - 1)
         response_text = model.invoke(prompt)
 
-    sources = reversed([{'name': doc.metadata.get("id", None)[0:doc.metadata.get("id", None).rfind(':')], 'content': db.get(doc.metadata['id'])['documents'][0]} for doc, _score in results])
+    sources = reversed([{'name': doc.metadata.get("id", None)[0:doc.metadata.get("id", None).rfind(':')], 'content': db.get(doc.metadata['id'])['documents'][0]} for doc in results])
     formatted_response = f"{response_text}\nИсточники: {sources}"
     print(formatted_response)
     return response_text, sources

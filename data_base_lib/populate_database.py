@@ -1,14 +1,14 @@
 import os
 import shutil
 from nltk.tokenize import word_tokenize
-from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from data_base_lib.get_embedding_function import get_embedding_function
 from langchain_chroma import Chroma
 import warnings
-from langchain_community.retrievers import BM25Retriever
+from funcs.bm25_retriever import CustomBM25Retriever
 import chromadb
+
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -36,7 +36,7 @@ def populate_database(params, documents: list[str], metadata: dict):
 
 def add_to_BM25(documents):
     chunks_with_ids = calculate_chunk_ids(documents)
-    retriever = BM25Retriever.from_documents(chunks_with_ids, preprocess_func=word_tokenize)
+    retriever = CustomBM25Retriever.from_documents(chunks_with_ids, preprocess_func=word_tokenize)
     import pickle
 
     def save_object(obj, filename):
