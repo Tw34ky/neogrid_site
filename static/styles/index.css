@@ -5,6 +5,7 @@ body {
     padding: 20px;
     color: #333;
 }
+
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -53,11 +54,13 @@ body {
 }
 
 h1 {
+    margin: 10px;
     font-family: Century Gothic, serif;
     font-size: 7.2em;
     text-align: center;
     color: #444;
 }
+
 .breadcrumb {
     margin-bottom: 20px;
     font-size: 1em;
@@ -102,6 +105,7 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
 .full-width-search {
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -146,11 +150,11 @@ button:before {
 }
 
 button.delete-btn {
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 5px 5px 5px 5px;
-        border: none;
-        cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px 5px 5px 5px;
+    border: none;
+    cursor: pointer;
 }
 
 button.delete-btn:hover {
@@ -221,4 +225,12 @@ div#loading {
   100% {
     transform: rotate(360deg);
   }
+}
+
+#search-term::placeholder {
+    transition: opacity 0.2s ease;
+    color: #666;
+}
+#search-term:focus::placeholder {
+    opacity: 0.7;
 }

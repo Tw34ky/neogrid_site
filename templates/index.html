@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeoGrid</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link href="{{ url_for('static',filename='styles/index.css') }}" rel="stylesheet" type="text/css"/>
+    <link href="{{ url_for('static', filename='styles/index.css') }}" rel="stylesheet" type="text/css"/>
     <script type="text/javascript">
         function loading() {
             document.getElementById("loading").style.display = "block";
@@ -40,9 +40,13 @@
 
         <div class="search-box">
             <form action="{{ url_for('invoke_prompt') }}">
-                <input type="text" name="search_term" placeholder="Задайте вопрос по вашим данным"
+
+                <input type="text" id="search-term" placeholder="Задайте вопрос по вашим данным"
                        value="{{ search_term if search_term }}" class="search-input">
-                <input type="hidden" name="current_dir" value="{{ current_dir }}">
+
+                <script type="text/javascript" src="{{ url_for('static', filename='js/search-input.js') }}"></script>
+
+                <input type="hidden" name="current-dir" value="{{ current_dir }}">
                 <button class="submit_button" type="submit" onclick="loading();"></button>
                 {% if is_search_results %}
                     <a href="{{ url_for('browse', subpath=current_dir[base_dir|length +1:].replace('\\', '/')) }}"
@@ -52,7 +56,7 @@
         </div>
 
         <div class="breadcrumb">
-            <a href="{{ url_for('index') }}">🏠 Home</a>
+            <a href="{{ url_for('index') }}" id="path-navigation">🏠 Home</a>
             {% for part in path_parts %}
                 &nbsp;/&nbsp;
                 <a href="{{ url_for('browse', subpath=part.path) }}">{{ part.name }}</a>
@@ -77,7 +81,8 @@
             <tr>
                 <td>
                     {% if item.is_dir %}
-                        <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}"
+                        <!-- <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name)[base_dir|length +1:].replace('\\', '/')) }}" -->
+                        <a href="{{ url_for('browse', subpath=(current_dir + '/' + item.name).replace('\\', '/')) }}"
                            class="dir">📁 {{ item.name }}</a>
                     {% else %}
                         <span class="file">📄 {{ item.name }}</span>
@@ -87,7 +92,7 @@
                 <td>{{ item.modified }}</td>
                 <td>
                     {% if not item.is_dir %}
-                    <form action="{{ url_for('delete_file', filename=item.relative_path) }}" method="post" style="display:inline;">
+                    <form action="{{ url_for('delete_file', filename=item.relative_path) }}" method="post" style="display: inline;">
                         <button class="delete-btn" type="submit">Удалить</button>
                     </form>
                     {% endif %}
