@@ -252,41 +252,5 @@ def restart_database():
 #     return None
 
 
-def parse_file(filepath: str):
-    try:
-        if filepath.endswith('.txt'):
-            with open(filepath, 'r', encoding='utf-8') as f:
-                content = f.read()
-                return content
-
-        elif filepath.endswith('.docx') or filepath.endswith('.doc'):
-            doc = docx.Document(filepath)
-            content = ' '.join([para.text for para in doc.paragraphs])
-            return content
-
-        elif filepath.endswith('.pdf'):
-            import fitz  # PyMuPDF
-            with fitz.open(filepath) as doc:
-                content = ""
-                for page in doc:
-                    content += page.get_text()
-                if len(content) == 0:
-                    content = pdf_to_text(filepath)
-                return content
-
-        elif filepath.endswith('.rtf'):
-            from striprtf.striprtf import rtf_to_text
-
-            with open(filepath, encoding='utf-8') as infile:
-                content = infile.read()
-                content = rtf_to_text(content)
-                return content
-        return False
-
-    except Exception as e:
-        print(f"Error reading {filepath}: {e}")
-        return False
-
-
 if __name__ == '__main__':
     app.run(port=5000)

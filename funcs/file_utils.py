@@ -1,6 +1,6 @@
 import os
 import docx
-import fitz
+import pymupdf
 from striprtf.striprtf import rtf_to_text
 from funcs.global_vars import SUPPORTED_FORMATS
 from funcs.pytesseract_func import pdf_to_text  # используется для OCR
@@ -19,7 +19,7 @@ def parse_file(filepath: str):
             return ' '.join([para.text for para in doc.paragraphs])
 
         elif filepath.endswith('.pdf'):
-            with fitz.open(filepath) as doc:
+            with pymupdf.open(filepath) as doc:
                 content = ""
                 for page in doc:
                     content += page.get_text()

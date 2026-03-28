@@ -2,7 +2,7 @@ import os
 import shutil
 from nltk.tokenize import word_tokenize
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.schema.document import Document
+from langchain_core.documents import Document
 from data_base_lib.get_embedding_function import get_embedding_function
 from langchain_chroma import Chroma
 import warnings
